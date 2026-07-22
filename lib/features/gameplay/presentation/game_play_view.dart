@@ -13,6 +13,7 @@ import '../../../core/widgets/hint_button.dart';
 import '../../../core/widgets/level_badge.dart';
 import '../../../core/widgets/life_counter.dart';
 import '../../../core/widgets/speech_bubble.dart';
+import '../../ads/presentation/rewarded_reveal_button.dart';
 import '../../progression/application/progress_controller.dart';
 import '../application/game_controller.dart';
 import '../domain/game_state.dart';
@@ -121,6 +122,7 @@ class GamePlayView extends ConsumerWidget {
                 if (coinsEnabled) ...[
                   const SizedBox(height: DoodleMetrics.md),
                   _HintRow(state: state, enabled: playing, coins: coins),
+                  const RewardedRevealButton(),
                 ],
               ],
             ),

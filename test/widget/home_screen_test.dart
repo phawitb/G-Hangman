@@ -38,7 +38,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 800));
 
-    expect(find.text('Doodle Word Quest'), findsOneWidget);
+    expect(find.text('Hangman Inky Words'), findsOneWidget);
     expect(find.text('Level Select'), findsOneWidget);
     expect(find.text('Two Player'), findsOneWidget);
     expect(find.text('Daily Challenge'), findsOneWidget);

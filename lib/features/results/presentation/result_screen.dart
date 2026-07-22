@@ -13,6 +13,7 @@ import '../../../core/widgets/doodle_icons.dart';
 import '../../../core/widgets/notebook_background.dart';
 import '../../../core/widgets/reward_progress_track.dart';
 import '../../../core/constants/economy.dart';
+import '../../ads/application/ad_providers.dart';
 import '../../gameplay/application/game_mode.dart';
 import '../../progression/application/progress_controller.dart';
 import '../domain/result_args.dart';
@@ -144,6 +145,13 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     );
   }
 
+  /// Navigates after optionally showing an interstitial (adventure wins only,
+  /// every Nth completed level). Falls through to navigation if no ad is shown.
+  Future<void> _leaveAfterWin(String route) async {
+    await ref.read(adServiceProvider).maybeShowInterstitial();
+    if (mounted) context.go(route);
+  }
+
   Widget _winActions(BuildContext context) {
     switch (args.mode) {
       case GameMode.adventure:
@@ -154,7 +162,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                 label: 'Replay',
                 variant: DoodleButtonVariant.secondary,
                 expand: true,
-                onPressed: () => context.go(AppRoutes.game(args.level.id)),
+                onPressed: () => _leaveAfterWin(AppRoutes.game(args.level.id)),
               ),
             ),
             const SizedBox(width: DoodleMetrics.md),
@@ -163,9 +171,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                 label: args.nextLevelId != null ? 'Next' : 'Home',
                 expand: true,
                 icon: const DoodleIcon(DoodleIconType.arrowRight, size: 22),
-                onPressed: () => args.nextLevelId != null
-                    ? context.go(AppRoutes.game(args.nextLevelId!))
-                    : context.go(AppRoutes.home),
+                onPressed: () => _leaveAfterWin(
+                  args.nextLevelId != null
+                      ? AppRoutes.game(args.nextLevelId!)
+                      : AppRoutes.home,
+                ),
               ),
             ),
           ],

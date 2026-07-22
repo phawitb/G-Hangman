@@ -10,6 +10,7 @@ import '../../../core/providers.dart';
 import '../../../core/widgets/doodle_icon_button.dart';
 import '../../../core/widgets/doodle_icons.dart';
 import '../../../core/widgets/notebook_background.dart';
+import '../../ads/presentation/banner_ad_widget.dart';
 import '../../gameplay/domain/game_level.dart';
 import '../../progression/application/progress_controller.dart';
 import '../../progression/domain/player_progress.dart';
@@ -63,6 +64,12 @@ class LevelSelectScreen extends ConsumerWidget {
                     );
                   },
                 ),
+              ),
+              // Anchored banner footer. Occupies no space until an ad loads, so
+              // it never overlaps the list, buttons or the safe area.
+              const Padding(
+                padding: EdgeInsets.only(top: DoodleMetrics.xs),
+                child: BannerAdWidget(),
               ),
             ],
           ),

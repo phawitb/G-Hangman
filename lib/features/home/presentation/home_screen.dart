@@ -7,6 +7,7 @@ import '../../../app/routes.dart';
 import '../../../app/theme/doodle_colors.dart';
 import '../../../app/theme/doodle_metrics.dart';
 import '../../../app/theme/doodle_text_styles.dart';
+import '../../../core/constants/app_info.dart';
 import '../../../core/providers.dart';
 import '../../../core/widgets/character_scene.dart';
 import '../../../core/widgets/coin_counter.dart';
@@ -14,6 +15,7 @@ import '../../../core/widgets/doodle_button.dart';
 import '../../../core/widgets/doodle_icon_button.dart';
 import '../../../core/widgets/doodle_icons.dart';
 import '../../../core/widgets/notebook_background.dart';
+import '../../ads/presentation/rewarded_coins_button.dart';
 import '../../gameplay/domain/scene_theme.dart';
 import '../../gameplay/domain/game_state.dart';
 import '../../progression/application/progress_controller.dart';
@@ -56,6 +58,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: DoodleMetrics.lg),
                         _buttons(context, currentLevel),
+                        const RewardedCoinsButton(),
                         const SizedBox(height: DoodleMetrics.lg),
                       ],
                     ),
@@ -87,7 +90,7 @@ class HomeScreen extends ConsumerWidget {
     return Column(
       children: [
         Text(
-          'Doodle Word Quest',
+          AppInfo.name,
           textAlign: TextAlign.center,
           style: DoodleTextStyles.logo(),
         ),

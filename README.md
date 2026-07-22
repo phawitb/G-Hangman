@@ -41,6 +41,8 @@ _Add screenshots here once you run the app (e.g. `docs/home.png`, `docs/game.png
 - **Accessibility** — semantic labels on icons/keys, 48px minimum tap targets,
   reduced-motion support, and scalable text without overflow.
 - **Responsive** — portrait-first, usable from ~320px wide up to tablets.
+- **Monetization** — AdMob rewarded, interstitial and banner ads with UMP
+  consent, all optional and non-intrusive (see _AdMob monetization_ below).
 
 ---
 
@@ -53,6 +55,7 @@ _Add screenshots here once you run the app (e.g. `docs/home.png`, `docs/game.png
 | Navigation | `go_router` |
 | Persistence | `shared_preferences` (JSON, versioned, corruption-tolerant) |
 | Typography | `google_fonts` (Kalam + Patrick Hand, OFL) with graceful fallback |
+| Ads | `google_mobile_ads` (rewarded / interstitial / banner + UMP consent) |
 | Animation | `flutter_animate` + `AnimationController` / `CustomPainter` |
 | Audio | Built-in `SystemSound` abstraction (no-op-safe, no bundled files) |
 | Haptics | Built-in `HapticFeedback` abstraction (respects the settings toggle) |
@@ -204,9 +207,48 @@ already set to **Doodle Word Quest** in `AndroidManifest.xml`
 
 ---
 
+## AdMob monetization
+
+Ads use the official **`google_mobile_ads`** plugin with Google **UMP** consent.
+In debug builds the official Google **test** ad units are always used, and
+automated tests use a no-op ad service, so real ad IDs are never touched during
+development or CI. Ads are Android/iOS only; the web build uses the no-op service.
+
+**Placements** (intentionally non-intrusive):
+
+| Ad type | Where | Reward / trigger |
+| --- | --- | --- |
+| Rewarded | Home ("Free 50 coins"), in-game ("Reveal a letter — watch ad"), and after a loss ("keep playing") | Coins / a revealed letter / +2 revive chances — granted **only** inside `onUserEarnedReward` |
+| Interstitial | Between levels, from the result screen | Only after every **4th** completed level; never during gameplay; never right after a rewarded ad |
+| Banner | Level-select screen footer only | Occupies zero space until loaded, so it never overlaps content |
+
+Watching an ad is **never required** to continue ordinary gameplay, and opening
+an ad never grants a reward on its own.
+
+### Where to enter your AdMob IDs
+
+1. **Android App ID** — `android/app/src/main/AndroidManifest.xml`
+   (`<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" …>`).
+2. **iOS App ID** — `ios/Runner/Info.plist` (key `GADApplicationIdentifier`).
+3. **Android ad unit IDs** — `AdConfig._prodAndroid` in
+   `lib/features/ads/domain/ad_config.dart`.
+4. **iOS ad unit IDs** — `AdConfig._prodIos` in the same file.
+
+All four currently hold Google's sample/test values or clearly-marked
+`0000…` placeholders. Replace them with your production IDs before release; the
+`AdConfig.useTestAds` switch automatically keeps test units in debug builds.
+
+Consent: `ConsentManager` requests consent info on every launch, shows the form
+when required, and gates ad loading on `canRequestAds`. When UMP marks privacy
+options as required, a **Privacy Choices** button appears in Settings.
+
+---
+
 ## Release checklist
 
 - [ ] Replace the package name / bundle ID placeholders.
+- [ ] Replace the AdMob App IDs (manifest + plist) and production ad unit IDs
+      (`lib/features/ads/domain/ad_config.dart`); test your fill rate.
 - [ ] Replace launcher icons (`flutter_launcher_icons` or platform tooling).
 - [ ] Replace the Privacy Policy and Terms placeholders
       (`lib/features/settings/presentation/info_page.dart`).

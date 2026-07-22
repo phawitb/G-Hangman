@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Doodle Word Quest</string>
+	<string>Hangman Inky Words</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -16,6 +16,10 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>doodle_word_quest</string>
+	<!-- AdMob App ID (production, iOS) for "Hangman Inky Words". Debug builds
+	     still serve Google test ads via the test ad units in AdConfig. -->
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-7434725459068649~6150879874</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

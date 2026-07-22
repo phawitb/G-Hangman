@@ -13,6 +13,7 @@ import '../../../core/widgets/doodle_icon_button.dart';
 import '../../../core/widgets/doodle_icons.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/notebook_background.dart';
+import '../../ads/application/ad_providers.dart';
 import '../../daily/application/daily_controller.dart';
 import '../../progression/application/progress_controller.dart';
 import '../application/settings_controller.dart';
@@ -111,6 +112,16 @@ class SettingsScreen extends ConsumerWidget {
                 _link(context, 'Privacy Policy', AppRoutes.privacy),
                 const SizedBox(height: DoodleMetrics.md),
                 _link(context, 'Terms of Use', AppRoutes.terms),
+                if (ref.watch(adServiceProvider).isPrivacyOptionsRequired) ...[
+                  const SizedBox(height: DoodleMetrics.md),
+                  DoodleButton(
+                    label: 'Privacy Choices',
+                    variant: DoodleButtonVariant.secondary,
+                    expand: true,
+                    onPressed: () =>
+                        ref.read(adServiceProvider).showPrivacyOptions(),
+                  ),
+                ],
                 const SizedBox(height: DoodleMetrics.md),
                 DoodleButton(
                   label: 'Reset Progress',

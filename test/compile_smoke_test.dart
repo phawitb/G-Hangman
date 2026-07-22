@@ -3,6 +3,8 @@
 // signature is caught in CI without needing the native Android/iOS toolchains.
 import 'package:doodle_word_quest/app/app.dart';
 import 'package:doodle_word_quest/app/router.dart';
+import 'package:doodle_word_quest/features/ads/application/google_ad_service.dart';
+import 'package:doodle_word_quest/features/ads/presentation/banner_ad_widget.dart';
 import 'package:doodle_word_quest/features/daily/presentation/daily_screen.dart';
 import 'package:doodle_word_quest/features/gameplay/presentation/game_screen.dart';
 import 'package:doodle_word_quest/features/gameplay/presentation/invalid_level_view.dart';
@@ -33,5 +35,8 @@ void main() {
     // Reference the remaining screen constructors so their libraries compile.
     expect(ResultScreen, isNotNull);
     expect(TwoPlayerGameScreen, isNotNull);
+    // Ads layer (incl. the google_mobile_ads-backed service) compiles.
+    expect(GoogleAdService, isNotNull);
+    expect(const BannerAdWidget(), isNotNull);
   });
 }

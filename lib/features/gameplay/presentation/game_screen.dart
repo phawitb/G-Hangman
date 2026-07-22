@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'dart:async';
+
 import '../../../app/routes.dart';
 import '../../../core/providers.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/notebook_background.dart';
+import '../../ads/application/ad_providers.dart';
+import '../../ads/domain/ad_reward.dart';
 import '../../progression/application/progress_controller.dart';
 import '../../progression/domain/play_result.dart';
 import '../../results/domain/result_args.dart';
@@ -31,6 +35,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   GameLevel? _level;
   bool _invalid = false;
   bool _finishing = false;
+  bool _reviveOffered = false;
 
   @override
   void initState() {
@@ -59,9 +64,26 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   Future<void> _onFinish(GameState finalState) async {
     if (_finishing) return;
-    _finishing = true;
     final level = _level!;
     final won = finalState.phase == GamePhase.won;
+
+    // Offer a one-time "watch an ad to keep playing" revive before finalising a
+    // loss. If the player revives, the session returns to playing and we bail
+    // out without recording anything.
+    if (!won && !_reviveOffered) {
+      _reviveOffered = true;
+      final revived = await _offerRevive();
+      if (revived || !mounted) return;
+    }
+
+    _finishing = true;
+
+    if (won) {
+      // Feed the interstitial cadence; the ad itself is shown between levels
+      // from the result screen, never during gameplay.
+      ref.read(adServiceProvider).registerLevelCompleted();
+    }
+
     final result = PlayResult(
       levelId: level.id,
       won: won,
@@ -91,6 +113,43 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         nextLevelId: next?.id,
       ),
     );
+  }
+
+  /// Offers a rewarded-ad revive. Returns true only if the ad was watched to
+  /// completion (reward earned) and the session was brought back to life.
+  Future<bool> _offerRevive() async {
+    final adService = ref.read(adServiceProvider);
+    // Only tempt the player when an ad is actually ready to show.
+    if (!adService.isRewardedReady) return false;
+
+    final accepted = await showDoodleConfirm(
+      context,
+      title: 'Out of chances!',
+      message:
+          'Watch a short ad to get ${AdRewards.reviveExtraChances} more '
+          'guesses and keep this level going?',
+      confirmLabel: 'Watch ad',
+      cancelLabel: 'No thanks',
+    );
+    if (!accepted || !mounted) return false;
+
+    var earned = false;
+    final done = Completer<void>();
+    await adService.showRewarded(
+      onReward: () => earned = true,
+      onUnavailable: () {
+        if (!done.isCompleted) done.complete();
+      },
+      onClosed: () {
+        if (!done.isCompleted) done.complete();
+      },
+    );
+    await done.future;
+    if (!earned || !mounted) return false;
+
+    return ref
+        .read(gameControllerProvider.notifier)
+        .revive(AdRewards.reviveExtraChances);
   }
 
   Future<void> _confirmLeave() async {
