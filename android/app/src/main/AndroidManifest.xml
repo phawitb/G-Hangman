@@ -26,12 +26,14 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <!-- AdMob App ID (production, Android) for "Hangman Inky Words".
-             Debug builds still serve Google test ads via the test ad units in
-             AdConfig; this App ID is safe to keep here for all build types. -->
+        <!-- ⚠️ TEMPORARY: Google's SAMPLE/TEST AdMob App ID, so test ads fill on
+             a device before the real app is approved in AdMob.
+             REVERT to the production App ID before a release build:
+               ca-app-pub-7434725459068649~4678136247
+             (Debug builds already use the test ad UNIT ids via AdConfig.) -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-7434725459068649~4678136247" />
+            android:value="ca-app-pub-3940256099942544~3347511713" />
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

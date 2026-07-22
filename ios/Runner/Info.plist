@@ -16,10 +16,12 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>doodle_word_quest</string>
-	<!-- AdMob App ID (production, iOS) for "Hangman Inky Words". Debug builds
-	     still serve Google test ads via the test ad units in AdConfig. -->
+	<!-- ⚠️ TEMPORARY: Google's SAMPLE/TEST AdMob App ID, so test ads fill on a
+	     device before the real app is approved in AdMob.
+	     REVERT to the production App ID before a release build:
+	       ca-app-pub-7434725459068649~6150879874 -->
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-7434725459068649~6150879874</string>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
