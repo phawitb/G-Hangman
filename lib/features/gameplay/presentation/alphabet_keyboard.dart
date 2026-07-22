@@ -39,15 +39,18 @@ class AlphabetKeyboard extends StatelessWidget {
           spacing: spacing,
           runSpacing: spacing,
           children: [
+            // Letters cleared by the bomb hint are removed from the board
+            // entirely (they animate away rather than lingering greyed out).
             for (final letter in state.level.letters)
-              SizedBox(
-                width: tileSize,
-                child: LetterTile(
-                  letter: letter,
-                  state: _stateFor(letter),
-                  onTap: enabled ? () => onLetter(letter) : null,
+              if (!state.isRemoved(letter))
+                SizedBox(
+                  width: tileSize,
+                  child: LetterTile(
+                    letter: letter,
+                    state: _stateFor(letter),
+                    onTap: enabled ? () => onLetter(letter) : null,
+                  ),
                 ),
-              ),
           ],
         );
       },

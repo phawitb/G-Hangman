@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/doodle_metrics.dart';
 import '../../../app/theme/doodle_text_styles.dart';
+import '../../../core/constants/economy.dart';
+import '../../../core/widgets/bomb_burst.dart';
 import '../../../core/widgets/character_scene.dart';
 import '../../../core/widgets/coin_counter.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
@@ -227,7 +229,7 @@ class _HintRow extends ConsumerWidget {
 
   static StrKey _labelKey(HintType type) => switch (type) {
     HintType.revealLetter => StrKey.hintReveal,
-    HintType.removeLetters => StrKey.hintClearThree,
+    HintType.removeLetters => StrKey.hintClear,
     HintType.extraChance => StrKey.hintPlusLife,
   };
 
@@ -242,6 +244,12 @@ class _HintRow extends ConsumerWidget {
         cancelLabel: t(StrKey.noThanks),
       );
       if (!ok || !context.mounted) return;
+    }
+    // Bomb goes off first, then the letters get blown off the keyboard.
+    if (hint == HintType.removeLetters) {
+      BombBurst.show(context);
+      await Future.delayed(const Duration(milliseconds: 320));
+      if (!context.mounted) return;
     }
     final outcome = await ref
         .read(gameControllerProvider.notifier)
@@ -274,7 +282,7 @@ class _HintRow extends ConsumerWidget {
       return Expanded(
         child: HintButton(
           icon: icon,
-          label: t(_labelKey(type)),
+          label: t(_labelKey(type), {'n': Economy.removeLettersCount}),
           cost: type.cost,
           affordable: affordable,
           onPressed: active ? () => _use(context, ref, type) : null,

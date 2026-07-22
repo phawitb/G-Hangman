@@ -34,7 +34,7 @@ enum StrKey {
   dailyTitle,
   playerTwoTurn,
   hintReveal,
-  hintClearThree,
+  hintClear,
   hintPlusLife,
   notEnoughCoins,
   noLettersHint,

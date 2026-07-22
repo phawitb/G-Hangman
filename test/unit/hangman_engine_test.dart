@@ -1,3 +1,4 @@
+import 'package:doodle_word_quest/core/constants/economy.dart';
 import 'package:doodle_word_quest/features/gameplay/domain/difficulty.dart';
 import 'package:doodle_word_quest/features/gameplay/domain/game_level.dart';
 import 'package:doodle_word_quest/features/gameplay/domain/game_state.dart';
@@ -98,10 +99,10 @@ void main() {
   });
 
   group('remove-letters hint', () {
-    test('removes wrong letters from the keyboard', () {
+    test('removes up to the configured number of wrong letters', () {
       var s = GameState.initial(_level());
       s = HangmanEngine.removeLetters(s);
-      expect(s.removedByHint.length, 3);
+      expect(s.removedByHint.length, Economy.removeLettersCount);
       // Removed letters must not be part of the answer.
       for (final l in s.removedByHint) {
         expect(s.requiredLetters.contains(l), isFalse);

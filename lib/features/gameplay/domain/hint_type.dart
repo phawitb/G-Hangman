@@ -14,13 +14,13 @@ enum HintType {
 
   String get label => switch (this) {
     HintType.revealLetter => 'Reveal a letter',
-    HintType.removeLetters => 'Remove 3 letters',
+    HintType.removeLetters => 'Remove ${Economy.removeLettersCount} letters',
     HintType.extraChance => 'Extra chance',
   };
 
   String get shortLabel => switch (this) {
     HintType.revealLetter => 'Reveal',
-    HintType.removeLetters => 'Clear 3',
+    HintType.removeLetters => 'Clear ${Economy.removeLettersCount}',
     HintType.extraChance => '+1 Life',
   };
 }

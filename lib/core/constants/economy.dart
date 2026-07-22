@@ -10,7 +10,7 @@ abstract final class Economy {
   static const int extraChanceCost = 50;
 
   /// How many wrong letters the "remove letters" hint clears at once.
-  static const int removeLettersCount = 3;
+  static const int removeLettersCount = 10;
 
   /// Extra Chance may only be purchased this many times per level.
   static const int maxExtraChancePerLevel = 1;
