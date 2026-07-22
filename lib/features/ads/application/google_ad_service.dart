@@ -23,9 +23,15 @@ class GoogleAdService implements AdService {
 
   RewardedAd? _rewardedAd;
   bool _rewardedLoading = false;
+  int _rewardedRetries = 0;
 
   InterstitialAd? _interstitialAd;
   bool _interstitialLoading = false;
+  int _interstitialRetries = 0;
+
+  /// Max automatic retries when an ad request comes back empty (a transient
+  /// "No ad to show" is common right after start-up).
+  static const int _maxRetries = 4;
 
   /// True while a full-screen ad is on screen — blocks stacking and rapid taps.
   bool _isShowingFullScreen = false;
@@ -50,6 +56,7 @@ class GoogleAdService implements AdService {
       await _consent.gatherConsent();
       _canRequestAds = await _consent.canRequestAds();
       await MobileAds.instance.initialize();
+      debugPrint('AdMob initialized. canRequestAds=$_canRequestAds');
       if (_canRequestAds) {
         preloadRewarded();
         preloadInterstitial();
@@ -57,6 +64,20 @@ class GoogleAdService implements AdService {
     } catch (e) {
       debugPrint('GoogleAdService.initialize failed: $e');
     }
+  }
+
+  /// Retries a failed preload with a growing backoff, up to [_maxRetries].
+  void _retry(
+    int Function() get,
+    void Function(int) set,
+    void Function() preload,
+  ) {
+    final n = get();
+    if (n >= _maxRetries) return;
+    set(n + 1);
+    Future.delayed(Duration(seconds: 2 * (n + 1)), () {
+      if (_canRequestAds) preload();
+    });
   }
 
   // ---- Rewarded -------------------------------------------------------------
@@ -70,13 +91,20 @@ class GoogleAdService implements AdService {
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
+          debugPrint('Rewarded ad loaded and ready.');
           _rewardedAd = ad;
           _rewardedLoading = false;
+          _rewardedRetries = 0;
         },
         onAdFailedToLoad: (error) {
           debugPrint('Rewarded failed to load: ${error.message}');
           _rewardedAd = null;
           _rewardedLoading = false;
+          _retry(
+            () => _rewardedRetries,
+            (v) => _rewardedRetries = v,
+            preloadRewarded,
+          );
         },
       ),
     );
@@ -139,13 +167,20 @@ class GoogleAdService implements AdService {
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
+          debugPrint('Interstitial ad loaded and ready.');
           _interstitialAd = ad;
           _interstitialLoading = false;
+          _interstitialRetries = 0;
         },
         onAdFailedToLoad: (error) {
           debugPrint('Interstitial failed to load: ${error.message}');
           _interstitialAd = null;
           _interstitialLoading = false;
+          _retry(
+            () => _interstitialRetries,
+            (v) => _interstitialRetries = v,
+            preloadInterstitial,
+          );
         },
       ),
     );
