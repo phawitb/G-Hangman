@@ -9,9 +9,12 @@ import '../../../app/theme/doodle_text_styles.dart';
 import '../../../core/providers.dart';
 import '../../../core/widgets/doodle_icon_button.dart';
 import '../../../core/widgets/doodle_icons.dart';
+import '../../../core/widgets/bottom_reserve.dart';
 import '../../../core/widgets/notebook_background.dart';
 import '../../ads/presentation/banner_ad_widget.dart';
 import '../../gameplay/domain/game_level.dart';
+import '../../localization/application/locale_controller.dart';
+import '../../localization/domain/str_key.dart';
 import '../../progression/application/progress_controller.dart';
 import '../../progression/domain/player_progress.dart';
 
@@ -22,56 +25,62 @@ class LevelSelectScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(progressControllerProvider);
     final levels = ref.watch(levelRepositoryProvider).all;
+    final t = ref.watch(translateProvider);
 
     return Scaffold(
       body: NotebookBackground(
         child: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(DoodleMetrics.lg),
-                child: Row(
-                  children: [
-                    DoodleIconButton(
-                      icon: DoodleIconType.back,
-                      semanticLabel: 'Back to Home',
-                      size: 44,
-                      onPressed: () => context.go(AppRoutes.home),
-                    ),
-                    const SizedBox(width: DoodleMetrics.sm),
-                    Text('Level Select', style: DoodleTextStyles.heading()),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(
-                    DoodleMetrics.lg,
-                    0,
-                    DoodleMetrics.lg,
-                    DoodleMetrics.xxl,
+          child: BottomReserve(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(DoodleMetrics.lg),
+                  child: Row(
+                    children: [
+                      DoodleIconButton(
+                        icon: DoodleIconType.back,
+                        semanticLabel: t(StrKey.back),
+                        size: 44,
+                        onPressed: () => context.go(AppRoutes.home),
+                      ),
+                      const SizedBox(width: DoodleMetrics.sm),
+                      Text(
+                        t(StrKey.levelSelectTitle),
+                        style: DoodleTextStyles.heading(),
+                      ),
+                    ],
                   ),
-                  itemCount: levels.length,
-                  itemBuilder: (context, index) {
-                    final level = levels[index];
-                    // Alternate sides for a winding "path" feel.
-                    final alignment = index.isEven
-                        ? Alignment.centerLeft
-                        : Alignment.centerRight;
-                    return Align(
-                      alignment: alignment,
-                      child: _LevelNode(level: level, progress: progress),
-                    );
-                  },
                 ),
-              ),
-              // Anchored banner footer. Occupies no space until an ad loads, so
-              // it never overlaps the list, buttons or the safe area.
-              const Padding(
-                padding: EdgeInsets.only(top: DoodleMetrics.xs),
-                child: BannerAdWidget(),
-              ),
-            ],
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(
+                      DoodleMetrics.lg,
+                      0,
+                      DoodleMetrics.lg,
+                      DoodleMetrics.xxl,
+                    ),
+                    itemCount: levels.length,
+                    itemBuilder: (context, index) {
+                      final level = levels[index];
+                      // Alternate sides for a winding "path" feel.
+                      final alignment = index.isEven
+                          ? Alignment.centerLeft
+                          : Alignment.centerRight;
+                      return Align(
+                        alignment: alignment,
+                        child: _LevelNode(level: level, progress: progress),
+                      );
+                    },
+                  ),
+                ),
+                // Anchored banner footer. Occupies no space until an ad loads, so
+                // it never overlaps the list, buttons or the safe area.
+                const Padding(
+                  padding: EdgeInsets.only(top: DoodleMetrics.xs),
+                  child: BannerAdWidget(),
+                ),
+              ],
+            ),
           ),
         ),
       ),

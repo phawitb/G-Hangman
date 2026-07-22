@@ -12,6 +12,8 @@ import '../../gameplay/application/game_mode.dart';
 import '../../gameplay/domain/game_level.dart';
 import '../../gameplay/domain/game_state.dart';
 import '../../gameplay/presentation/game_play_view.dart';
+import '../../localization/application/locale_controller.dart';
+import '../../localization/domain/str_key.dart';
 import '../../progression/application/progress_controller.dart';
 import '../../results/domain/result_args.dart';
 import '../application/daily_controller.dart';
@@ -82,12 +84,13 @@ class _DailyScreenState extends ConsumerState<DailyScreen> {
       if (mounted) context.go(AppRoutes.home);
       return;
     }
+    final t = ref.read(translateProvider);
     final leave = await showDoodleConfirm(
       context,
-      title: 'Leave the daily challenge?',
-      message: 'You can come back and finish it any time today.',
-      confirmLabel: 'Leave',
-      cancelLabel: 'Stay',
+      title: t(StrKey.leaveTitle),
+      message: t(StrKey.leaveMessage),
+      confirmLabel: t(StrKey.leave),
+      cancelLabel: t(StrKey.stay),
       destructive: true,
     );
     if (leave && mounted) context.go(AppRoutes.home);
@@ -95,6 +98,7 @@ class _DailyScreenState extends ConsumerState<DailyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(translateProvider);
     ref.listen<GameState?>(gameControllerProvider, (prev, next) {
       if (next != null && next.isFinished && !_finishing) {
         _onFinish(next);
@@ -108,7 +112,10 @@ class _DailyScreenState extends ConsumerState<DailyScreen> {
       },
       child: Scaffold(
         body: NotebookBackground(
-          child: GamePlayView(title: 'Daily Challenge', onBack: _confirmLeave),
+          child: GamePlayView(
+            title: t(StrKey.dailyTitle),
+            onBack: _confirmLeave,
+          ),
         ),
       ),
     );

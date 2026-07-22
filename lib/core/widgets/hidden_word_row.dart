@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/doodle_colors.dart';
 import '../../app/theme/doodle_metrics.dart';
 import '../../app/theme/doodle_text_styles.dart';
+import '../utilities/word_utils.dart';
 
 /// Renders the masked answer as a row of underlined slots. Revealed letters pop
 /// in; separators (spaces / punctuation) show as gaps or the raw character.
@@ -41,8 +42,7 @@ class HiddenWordRow extends StatelessWidget {
       // Word break: a visible gap.
       return SizedBox(width: slotWidth * 0.6, height: slotHeight);
     }
-    final isPunctuation =
-        ch != null && !RegExp(r'[A-Z]').hasMatch(ch.toUpperCase());
+    final isPunctuation = ch != null && !WordUtils.isLetter(ch);
 
     return SizedBox(
       width: slotWidth,

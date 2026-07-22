@@ -9,6 +9,8 @@ import '../features/gameplay/presentation/game_screen.dart';
 import '../features/gameplay/presentation/invalid_level_view.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/level_select/presentation/level_select_screen.dart';
+import '../features/localization/application/locale_controller.dart';
+import '../features/localization/presentation/language_select_screen.dart';
 import '../features/results/domain/result_args.dart';
 import '../features/results/presentation/result_screen.dart';
 import '../features/settings/application/settings_controller.dart';
@@ -27,10 +29,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.splash,
         redirect: (context, state) {
+          // First launch: choose a language, then the tutorial, then home.
+          final chosen = ref.read(localeControllerProvider).chosen;
+          if (!chosen) return AppRoutes.language;
           final done = ref.read(settingsControllerProvider).tutorialCompleted;
           return done ? AppRoutes.home : AppRoutes.tutorial;
         },
         builder: (context, state) => const LoadingOverlay(),
+      ),
+      GoRoute(
+        path: AppRoutes.language,
+        builder: (context, state) => LanguageSelectScreen(
+          fromSettings: state.uri.queryParameters['from'] == 'settings',
+        ),
       ),
       GoRoute(
         path: AppRoutes.tutorial,

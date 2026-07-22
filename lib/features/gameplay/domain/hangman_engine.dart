@@ -8,8 +8,6 @@ import 'hint_type.dart';
 /// Every method returns a *new* state; nothing here touches coins, storage,
 /// audio or the UI, which is what makes the game logic fully unit-testable.
 abstract final class HangmanEngine {
-  static const String alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
   /// Commit a letter guess. No-op when the game is finished, the input is not a
   /// letter, or the letter is unavailable (prevents duplicate guesses).
   static GameState guess(GameState state, String rawLetter) {
@@ -21,8 +19,7 @@ abstract final class HangmanEngine {
   }
 
   /// Letters still available on the keyboard.
-  static List<String> availableLetters(GameState state) => alphabet
-      .split('')
+  static List<String> availableLetters(GameState state) => state.level.letters
       .where((l) => state.isLetterTappable(l))
       .toList(growable: false);
 
@@ -52,8 +49,7 @@ abstract final class HangmanEngine {
   // ---- Remove-letters hint --------------------------------------------------
 
   /// Wrong, still-available letters that could be cleared.
-  static List<String> removableLetters(GameState state) => alphabet
-      .split('')
+  static List<String> removableLetters(GameState state) => state.level.letters
       .where(
         (l) =>
             !state.level.requiredLetters.contains(l) &&

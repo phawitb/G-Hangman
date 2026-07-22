@@ -6,6 +6,8 @@ import '../../../core/widgets/doodle_icons.dart';
 import '../../gameplay/application/game_controller.dart';
 import '../../gameplay/domain/game_state.dart';
 import '../../gameplay/domain/hangman_engine.dart';
+import '../../localization/application/locale_controller.dart';
+import '../../localization/domain/str_key.dart';
 import '../application/ad_providers.dart';
 
 /// "Watch an ad to reveal a letter" button, shown under the hint row only when
@@ -32,11 +34,10 @@ class _RewardedRevealButtonState extends ConsumerState<RewardedRevealButton> {
             ref.read(gameControllerProvider.notifier).revealLetterFromAd();
           },
           onUnavailable: () {
+            final t = ref.read(translateProvider);
             messenger
               ..hideCurrentSnackBar()
-              ..showSnackBar(
-                const SnackBar(content: Text('No ad available right now.')),
-              );
+              ..showSnackBar(SnackBar(content: Text(t(StrKey.noAdAvailable))));
           },
           onClosed: () {
             if (mounted) setState(() => _busy = false);
@@ -49,6 +50,7 @@ class _RewardedRevealButtonState extends ConsumerState<RewardedRevealButton> {
   Widget build(BuildContext context) {
     final state = ref.watch(gameControllerProvider);
     final canRequestAds = ref.watch(adServiceProvider).canRequestAds;
+    final t = ref.watch(translateProvider);
     final canReveal =
         state != null &&
         state.phase == GamePhase.playing &&
@@ -58,7 +60,7 @@ class _RewardedRevealButtonState extends ConsumerState<RewardedRevealButton> {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: DoodleButton(
-        label: _busy ? 'Loading ad…' : 'Reveal a letter — watch ad',
+        label: _busy ? t(StrKey.loadingAd) : t(StrKey.revealWatchAd),
         variant: DoodleButtonVariant.secondary,
         expand: true,
         minHeight: 46,

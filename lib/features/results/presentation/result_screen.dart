@@ -8,6 +8,7 @@ import '../../../app/theme/doodle_metrics.dart';
 import '../../../app/theme/doodle_text_styles.dart';
 import '../../../core/widgets/doodle_button.dart';
 import '../../../core/widgets/doodle_card.dart';
+import '../../../core/widgets/bottom_reserve.dart';
 import '../../../core/widgets/doodle_confetti.dart';
 import '../../../core/widgets/doodle_icons.dart';
 import '../../../core/widgets/notebook_background.dart';
@@ -15,6 +16,8 @@ import '../../../core/widgets/reward_progress_track.dart';
 import '../../../core/constants/economy.dart';
 import '../../ads/application/ad_providers.dart';
 import '../../gameplay/application/game_mode.dart';
+import '../../localization/application/locale_controller.dart';
+import '../../localization/domain/str_key.dart';
 import '../../progression/application/progress_controller.dart';
 import '../domain/result_args.dart';
 
@@ -52,19 +55,21 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     return Scaffold(
       body: NotebookBackground(
         child: SafeArea(
-          child: Stack(
-            children: [
-              Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(DoodleMetrics.xl),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 480),
-                    child: won ? _buildWin(context) : _buildLoss(context),
+          child: BottomReserve(
+            child: Stack(
+              children: [
+                Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(DoodleMetrics.xl),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 480),
+                      child: won ? _buildWin(context) : _buildLoss(context),
+                    ),
                   ),
                 ),
-              ),
-              if (won) const Positioned.fill(child: DoodleConfetti()),
-            ],
+                if (won) const Positioned.fill(child: DoodleConfetti()),
+              ],
+            ),
           ),
         ),
       ),
@@ -77,12 +82,13 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     final state = args.finalState;
     final progress = ref.watch(progressControllerProvider);
     final isAdventure = args.mode == GameMode.adventure;
+    final t = ref.read(translateProvider);
 
     return DoodleCard(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Great Job!', style: DoodleTextStyles.heading()),
+          Text(t(StrKey.greatJob), style: DoodleTextStyles.heading()),
           const SizedBox(height: DoodleMetrics.sm),
           _StarRow(stars: state.stars),
           const SizedBox(height: DoodleMetrics.md),
@@ -100,16 +106,19 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             coinsEarned: args.coinsEarned,
             accuracy: state.accuracy,
             wrongGuesses: state.wrongCount,
+            coinsLabel: t(StrKey.statCoins),
+            accuracyLabel: t(StrKey.statAccuracy),
+            mistakesLabel: t(StrKey.statMistakes),
             streakLabel: args.mode == GameMode.daily
-                ? 'Daily streak'
-                : 'Streak',
+                ? t(StrKey.statDailyStreak)
+                : t(StrKey.statStreak),
             streak: args.mode == GameMode.daily
                 ? (args.dailyStreak ?? 0)
                 : progress.currentStreak,
           ),
           if (isAdventure) ...[
             const SizedBox(height: DoodleMetrics.lg),
-            Text('Reward chest', style: DoodleTextStyles.label()),
+            Text(t(StrKey.rewardChest), style: DoodleTextStyles.label()),
             const SizedBox(height: DoodleMetrics.sm),
             RewardProgressTrack(
               filled: progress.winsTowardChest,
@@ -123,7 +132,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   const DoodleIcon(DoodleIconType.coin, size: 20),
                   const SizedBox(width: DoodleMetrics.xs),
                   Text(
-                    '+$_chestReward from the chest!',
+                    t(StrKey.chestReward, {'n': _chestReward!}),
                     style: DoodleTextStyles.body(),
                   ),
                 ],
@@ -131,7 +140,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             ] else if (progress.chestReady) ...[
               const SizedBox(height: DoodleMetrics.md),
               DoodleButton(
-                label: 'Open the chest!',
+                label: t(StrKey.openChest),
                 variant: DoodleButtonVariant.success,
                 icon: const DoodleIcon(DoodleIconType.chest, size: 22),
                 onPressed: _chestOpening ? null : _openChest,
@@ -153,13 +162,14 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   }
 
   Widget _winActions(BuildContext context) {
+    final t = ref.read(translateProvider);
     switch (args.mode) {
       case GameMode.adventure:
         return Row(
           children: [
             Expanded(
               child: DoodleButton(
-                label: 'Replay',
+                label: t(StrKey.replay),
                 variant: DoodleButtonVariant.secondary,
                 expand: true,
                 onPressed: () => _leaveAfterWin(AppRoutes.game(args.level.id)),
@@ -168,7 +178,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             const SizedBox(width: DoodleMetrics.md),
             Expanded(
               child: DoodleButton(
-                label: args.nextLevelId != null ? 'Next' : 'Home',
+                label: args.nextLevelId != null
+                    ? t(StrKey.next)
+                    : t(StrKey.home),
                 expand: true,
                 icon: const DoodleIcon(DoodleIconType.arrowRight, size: 22),
                 onPressed: () => _leaveAfterWin(
@@ -182,7 +194,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         );
       case GameMode.daily:
         return DoodleButton(
-          label: 'Back to Home',
+          label: t(StrKey.backToHome),
           expand: true,
           onPressed: () => context.go(AppRoutes.home),
         );
@@ -191,7 +203,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
           children: [
             Expanded(
               child: DoodleButton(
-                label: 'Home',
+                label: t(StrKey.home),
                 variant: DoodleButtonVariant.secondary,
                 expand: true,
                 onPressed: () => context.go(AppRoutes.home),
@@ -200,7 +212,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             const SizedBox(width: DoodleMetrics.md),
             Expanded(
               child: DoodleButton(
-                label: 'New Round',
+                label: t(StrKey.newRound),
                 expand: true,
                 onPressed: () => context.go(AppRoutes.twoPlayerSetup),
               ),
@@ -214,19 +226,20 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
 
   Widget _buildLoss(BuildContext context) {
     final state = args.finalState;
+    final t = ref.read(translateProvider);
     return DoodleCard(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Out of chances!', style: DoodleTextStyles.heading()),
+          Text(t(StrKey.outOfChances), style: DoodleTextStyles.heading()),
           const SizedBox(height: DoodleMetrics.sm),
           Text(
-            "Don't worry — every guess makes you sharper.",
+            t(StrKey.lossEncourage),
             textAlign: TextAlign.center,
             style: DoodleTextStyles.body(),
           ),
           const SizedBox(height: DoodleMetrics.lg),
-          Text('The answer was', style: DoodleTextStyles.label()),
+          Text(t(StrKey.theAnswerWas), style: DoodleTextStyles.label()),
           const SizedBox(height: DoodleMetrics.xs),
           _AnswerReveal(answer: state.level.normalizedAnswer),
           if (state.level.explanation != null) ...[
@@ -245,14 +258,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   }
 
   Widget _lossActions(BuildContext context) {
+    final t = ref.read(translateProvider);
     final retryTarget = switch (args.mode) {
       GameMode.adventure => AppRoutes.game(args.level.id),
       GameMode.daily => AppRoutes.daily,
       GameMode.twoPlayer => AppRoutes.twoPlayerSetup,
     };
     final secondaryLabel = args.mode == GameMode.adventure
-        ? 'Level Select'
-        : 'Home';
+        ? t(StrKey.levelSelect)
+        : t(StrKey.home);
     final secondaryTarget = args.mode == GameMode.adventure
         ? AppRoutes.levels
         : AppRoutes.home;
@@ -269,7 +283,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         const SizedBox(width: DoodleMetrics.md),
         Expanded(
           child: DoodleButton(
-            label: 'Try Again',
+            label: t(StrKey.tryAgain),
             expand: true,
             onPressed: () => context.go(retryTarget),
           ),
@@ -326,6 +340,9 @@ class _StatsGrid extends StatelessWidget {
     required this.accuracy,
     required this.wrongGuesses,
     required this.streak,
+    required this.coinsLabel,
+    required this.accuracyLabel,
+    required this.mistakesLabel,
     required this.streakLabel,
   });
 
@@ -333,6 +350,9 @@ class _StatsGrid extends StatelessWidget {
   final double accuracy;
   final int wrongGuesses;
   final int streak;
+  final String coinsLabel;
+  final String accuracyLabel;
+  final String mistakesLabel;
   final String streakLabel;
 
   @override
@@ -342,9 +362,9 @@ class _StatsGrid extends StatelessWidget {
       runSpacing: DoodleMetrics.md,
       alignment: WrapAlignment.center,
       children: [
-        _stat('Coins', '+$coinsEarned', DoodleIconType.coin),
-        _stat('Accuracy', '${(accuracy * 100).round()}%', null),
-        _stat('Mistakes', '$wrongGuesses', null),
+        _stat(coinsLabel, '+$coinsEarned', DoodleIconType.coin),
+        _stat(accuracyLabel, '${(accuracy * 100).round()}%', null),
+        _stat(mistakesLabel, '$wrongGuesses', null),
         _stat(streakLabel, '$streak', DoodleIconType.sparkle),
       ],
     );

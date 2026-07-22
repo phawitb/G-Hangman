@@ -10,6 +10,7 @@ import 'package:doodle_word_quest/features/gameplay/presentation/game_screen.dar
 import 'package:doodle_word_quest/features/gameplay/presentation/invalid_level_view.dart';
 import 'package:doodle_word_quest/features/home/presentation/home_screen.dart';
 import 'package:doodle_word_quest/features/level_select/presentation/level_select_screen.dart';
+import 'package:doodle_word_quest/features/localization/presentation/language_select_screen.dart';
 import 'package:doodle_word_quest/features/results/presentation/result_screen.dart';
 import 'package:doodle_word_quest/features/settings/presentation/info_page.dart';
 import 'package:doodle_word_quest/features/settings/presentation/settings_screen.dart';
@@ -27,6 +28,7 @@ void main() {
     expect(const InvalidLevelView(), isNotNull);
     expect(const HomeScreen(), isNotNull);
     expect(const LevelSelectScreen(), isNotNull);
+    expect(const LanguageSelectScreen(), isNotNull);
     expect(const SettingsScreen(), isNotNull);
     expect(const TutorialScreen(), isNotNull);
     expect(const TwoPlayerSetupScreen(), isNotNull);

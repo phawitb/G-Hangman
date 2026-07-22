@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/routes.dart';
 import '../../../app/theme/doodle_metrics.dart';
 import '../../../app/theme/doodle_text_styles.dart';
+import '../../../core/widgets/bottom_reserve.dart';
 import '../../../core/widgets/doodle_card.dart';
 import '../../../core/widgets/doodle_icon_button.dart';
 import '../../../core/widgets/doodle_icons.dart';
@@ -25,28 +26,30 @@ class InfoPage extends StatelessWidget {
     return Scaffold(
       body: NotebookBackground(
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(DoodleMetrics.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    DoodleIconButton(
-                      icon: DoodleIconType.back,
-                      semanticLabel: 'Back to Settings',
-                      size: 44,
-                      onPressed: () => context.go(AppRoutes.settings),
-                    ),
-                    const SizedBox(width: DoodleMetrics.sm),
-                    Expanded(
-                      child: Text(title, style: DoodleTextStyles.heading()),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: DoodleMetrics.lg),
-                DoodleCard(child: Text(body, style: DoodleTextStyles.body())),
-              ],
+          child: BottomReserve(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(DoodleMetrics.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      DoodleIconButton(
+                        icon: DoodleIconType.back,
+                        semanticLabel: 'Back to Settings',
+                        size: 44,
+                        onPressed: () => context.go(AppRoutes.settings),
+                      ),
+                      const SizedBox(width: DoodleMetrics.sm),
+                      Expanded(
+                        child: Text(title, style: DoodleTextStyles.heading()),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: DoodleMetrics.lg),
+                  DoodleCard(child: Text(body, style: DoodleTextStyles.body())),
+                ],
+              ),
             ),
           ),
         ),

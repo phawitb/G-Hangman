@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/economy.dart';
 import '../../../core/providers.dart';
+import '../../localization/application/locale_controller.dart';
 import '../domain/level_record.dart';
 import '../domain/play_result.dart';
 import '../domain/player_progress.dart';
@@ -20,12 +21,19 @@ class ProgressController extends Notifier<PlayerProgress> {
   /// coins can't be farmed indefinitely at full value.
   static const int _replayReward = 5;
 
+  /// Progress is per-language: watching the locale means switching language
+  /// reloads that language's saved progress (and switching back restores it).
+  String get _lang => ref.read(localeControllerProvider).language.code;
+
   @override
-  PlayerProgress build() => ref.watch(progressRepositoryProvider).load();
+  PlayerProgress build() {
+    final code = ref.watch(localeControllerProvider).language.code;
+    return ref.watch(progressRepositoryProvider).load(code);
+  }
 
   Future<void> _persist(PlayerProgress next) async {
     state = next;
-    await ref.read(progressRepositoryProvider).save(next);
+    await ref.read(progressRepositoryProvider).save(_lang, next);
   }
 
   // ---- Coins ---------------------------------------------------------------
@@ -147,7 +155,7 @@ class ProgressController extends Notifier<PlayerProgress> {
   // ---- Reset ---------------------------------------------------------------
 
   Future<void> resetAll() async {
-    await ref.read(progressRepositoryProvider).reset();
+    await ref.read(progressRepositoryProvider).reset(_lang);
     await _persist(PlayerProgress.initial());
   }
 }

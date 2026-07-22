@@ -10,6 +10,8 @@ import '../../gameplay/application/game_mode.dart';
 import '../../gameplay/domain/game_level.dart';
 import '../../gameplay/domain/game_state.dart';
 import '../../gameplay/presentation/game_play_view.dart';
+import '../../localization/application/locale_controller.dart';
+import '../../localization/domain/str_key.dart';
 import '../../results/domain/result_args.dart';
 
 /// Player 2 guesses the secret word. No coins/hints or progression here.
@@ -61,12 +63,13 @@ class _TwoPlayerGameScreenState extends ConsumerState<TwoPlayerGameScreen> {
       if (mounted) context.go(AppRoutes.home);
       return;
     }
+    final t = ref.read(translateProvider);
     final leave = await showDoodleConfirm(
       context,
-      title: 'End this round?',
-      message: 'The current round will be discarded.',
-      confirmLabel: 'End',
-      cancelLabel: 'Keep playing',
+      title: t(StrKey.leaveTitle),
+      message: t(StrKey.leaveMessage),
+      confirmLabel: t(StrKey.leave),
+      cancelLabel: t(StrKey.stay),
       destructive: true,
     );
     if (leave && mounted) context.go(AppRoutes.home);
@@ -74,6 +77,7 @@ class _TwoPlayerGameScreenState extends ConsumerState<TwoPlayerGameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(translateProvider);
     ref.listen<GameState?>(gameControllerProvider, (prev, next) {
       if (next != null && next.isFinished && !_finishing) {
         _onFinish(next);
@@ -87,7 +91,10 @@ class _TwoPlayerGameScreenState extends ConsumerState<TwoPlayerGameScreen> {
       },
       child: Scaffold(
         body: NotebookBackground(
-          child: GamePlayView(title: "Player 2's turn", onBack: _confirmLeave),
+          child: GamePlayView(
+            title: t(StrKey.playerTwoTurn),
+            onBack: _confirmLeave,
+          ),
         ),
       ),
     );

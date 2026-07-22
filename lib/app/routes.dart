@@ -1,6 +1,8 @@
 /// Centralised route paths and names for GoRouter.
 abstract final class AppRoutes {
   static const splash = '/';
+  static const language = '/language';
+  static const languageFromSettings = '/language?from=settings';
   static const tutorial = '/tutorial';
   static const home = '/home';
   static const levels = '/levels';

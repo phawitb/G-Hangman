@@ -11,10 +11,13 @@ import '../../../core/widgets/doodle_button.dart';
 import '../../../core/widgets/doodle_card.dart';
 import '../../../core/widgets/doodle_icon_button.dart';
 import '../../../core/widgets/doodle_icons.dart';
+import '../../../core/widgets/bottom_reserve.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/notebook_background.dart';
 import '../../ads/application/ad_providers.dart';
 import '../../daily/application/daily_controller.dart';
+import '../../localization/application/locale_controller.dart';
+import '../../localization/domain/str_key.dart';
 import '../../progression/application/progress_controller.dart';
 import '../application/settings_controller.dart';
 
@@ -22,20 +25,22 @@ class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   Future<void> _resetProgress(BuildContext context, WidgetRef ref) async {
+    final t = ref.read(translateProvider);
     final first = await showDoodleConfirm(
       context,
-      title: 'Reset all progress?',
-      message:
-          'This clears levels, stars, coins, streaks and the daily challenge.',
-      confirmLabel: 'Continue',
+      title: t(StrKey.resetTitle1),
+      message: t(StrKey.resetMsg1),
+      confirmLabel: t(StrKey.resetContinueLabel),
+      cancelLabel: t(StrKey.noThanks),
       destructive: true,
     );
     if (!first || !context.mounted) return;
     final second = await showDoodleConfirm(
       context,
-      title: 'Are you absolutely sure?',
-      message: 'This cannot be undone. Start completely fresh?',
-      confirmLabel: 'Reset everything',
+      title: t(StrKey.resetTitle2),
+      message: t(StrKey.resetMsg2),
+      confirmLabel: t(StrKey.resetConfirmLabel),
+      cancelLabel: t(StrKey.noThanks),
       destructive: true,
     );
     if (!second || !context.mounted) return;
@@ -44,112 +49,126 @@ class SettingsScreen extends ConsumerWidget {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Progress reset. Fresh start!')),
-      );
+      ..showSnackBar(SnackBar(content: Text(t(StrKey.resetDone))));
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsControllerProvider);
     final controller = ref.read(settingsControllerProvider.notifier);
+    final t = ref.watch(translateProvider);
+    final lang = ref.watch(localeControllerProvider).language;
 
     return Scaffold(
       body: NotebookBackground(
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(DoodleMetrics.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    DoodleIconButton(
-                      icon: DoodleIconType.back,
-                      semanticLabel: 'Back to Home',
-                      size: 44,
-                      onPressed: () => context.go(AppRoutes.home),
-                    ),
-                    const SizedBox(width: DoodleMetrics.sm),
-                    Text('Settings', style: DoodleTextStyles.heading()),
-                  ],
-                ),
-                const SizedBox(height: DoodleMetrics.lg),
-                DoodleCard(
-                  child: Column(
+          child: BottomReserve(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(DoodleMetrics.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      _toggle(
-                        'Sound effects',
-                        settings.soundEnabled,
-                        controller.setSound,
+                      DoodleIconButton(
+                        icon: DoodleIconType.back,
+                        semanticLabel: t(StrKey.back),
+                        size: 44,
+                        onPressed: () => context.go(AppRoutes.home),
                       ),
-                      const Divider(),
-                      _toggle(
-                        'Background music',
-                        settings.musicEnabled,
-                        controller.setMusic,
-                      ),
-                      const Divider(),
-                      _toggle(
-                        'Vibration',
-                        settings.hapticsEnabled,
-                        controller.setHaptics,
+                      const SizedBox(width: DoodleMetrics.sm),
+                      Text(
+                        t(StrKey.settingsTitle),
+                        style: DoodleTextStyles.heading(),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: DoodleMetrics.lg),
-                DoodleButton(
-                  label: 'Replay Tutorial',
-                  variant: DoodleButtonVariant.secondary,
-                  expand: true,
-                  onPressed: () async {
-                    await controller.replayTutorial();
-                    if (context.mounted) context.go(AppRoutes.tutorial);
-                  },
-                ),
-                const SizedBox(height: DoodleMetrics.md),
-                _link(context, 'Privacy Policy', AppRoutes.privacy),
-                const SizedBox(height: DoodleMetrics.md),
-                _link(context, 'Terms of Use', AppRoutes.terms),
-                if (ref.watch(adServiceProvider).isPrivacyOptionsRequired) ...[
-                  const SizedBox(height: DoodleMetrics.md),
+                  const SizedBox(height: DoodleMetrics.lg),
+                  DoodleCard(
+                    child: Column(
+                      children: [
+                        _toggle(
+                          t(StrKey.settingSound),
+                          settings.soundEnabled,
+                          controller.setSound,
+                        ),
+                        const Divider(),
+                        _toggle(
+                          t(StrKey.settingMusic),
+                          settings.musicEnabled,
+                          controller.setMusic,
+                        ),
+                        const Divider(),
+                        _toggle(
+                          t(StrKey.settingVibration),
+                          settings.hapticsEnabled,
+                          controller.setHaptics,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: DoodleMetrics.lg),
                   DoodleButton(
-                    label: 'Privacy Choices',
+                    label: '${t(StrKey.settingLanguage)}: ${lang.nativeName}',
                     variant: DoodleButtonVariant.secondary,
                     expand: true,
-                    onPressed: () =>
-                        ref.read(adServiceProvider).showPrivacyOptions(),
+                    onPressed: () => context.go(AppRoutes.languageFromSettings),
                   ),
-                ],
-                const SizedBox(height: DoodleMetrics.md),
-                DoodleButton(
-                  label: 'Reset Progress',
-                  variant: DoodleButtonVariant.danger,
-                  expand: true,
-                  onPressed: () => _resetProgress(context, ref),
-                ),
-                const SizedBox(height: DoodleMetrics.xl),
-                Center(
-                  child: Column(
-                    children: [
-                      Text(
-                        '${AppInfo.name} v${AppInfo.version}',
-                        style: DoodleTextStyles.label(),
-                      ),
-                      const SizedBox(height: DoodleMetrics.xs),
-                      Text(
-                        AppInfo.credits,
-                        textAlign: TextAlign.center,
-                        style: DoodleTextStyles.label().copyWith(
-                          color: DoodleColors.inkFaint,
+                  const SizedBox(height: DoodleMetrics.md),
+                  DoodleButton(
+                    label: t(StrKey.replayTutorial),
+                    variant: DoodleButtonVariant.secondary,
+                    expand: true,
+                    onPressed: () async {
+                      await controller.replayTutorial();
+                      if (context.mounted) context.go(AppRoutes.tutorial);
+                    },
+                  ),
+                  const SizedBox(height: DoodleMetrics.md),
+                  _link(context, t(StrKey.privacyPolicy), AppRoutes.privacy),
+                  const SizedBox(height: DoodleMetrics.md),
+                  _link(context, t(StrKey.termsOfUse), AppRoutes.terms),
+                  if (ref
+                      .watch(adServiceProvider)
+                      .isPrivacyOptionsRequired) ...[
+                    const SizedBox(height: DoodleMetrics.md),
+                    DoodleButton(
+                      label: t(StrKey.privacyChoices),
+                      variant: DoodleButtonVariant.secondary,
+                      expand: true,
+                      onPressed: () =>
+                          ref.read(adServiceProvider).showPrivacyOptions(),
+                    ),
+                  ],
+                  const SizedBox(height: DoodleMetrics.md),
+                  DoodleButton(
+                    label: t(StrKey.resetProgress),
+                    variant: DoodleButtonVariant.danger,
+                    expand: true,
+                    onPressed: () => _resetProgress(context, ref),
+                  ),
+                  const SizedBox(height: DoodleMetrics.xl),
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          '${AppInfo.name} v${AppInfo.version}',
+                          style: DoodleTextStyles.label(),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: DoodleMetrics.xs),
+                        Text(
+                          AppInfo.credits,
+                          textAlign: TextAlign.center,
+                          style: DoodleTextStyles.label().copyWith(
+                            color: DoodleColors.inkFaint,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: DoodleMetrics.lg),
-              ],
+                  const SizedBox(height: DoodleMetrics.lg),
+                ],
+              ),
             ),
           ),
         ),

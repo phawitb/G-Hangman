@@ -10,6 +10,8 @@ import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/notebook_background.dart';
 import '../../ads/application/ad_providers.dart';
 import '../../ads/domain/ad_reward.dart';
+import '../../localization/application/locale_controller.dart';
+import '../../localization/domain/str_key.dart';
 import '../../progression/application/progress_controller.dart';
 import '../../progression/domain/play_result.dart';
 import '../../results/domain/result_args.dart';
@@ -122,14 +124,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     // Only tempt the player when an ad is actually ready to show.
     if (!adService.isRewardedReady) return false;
 
+    final t = ref.read(translateProvider);
     final accepted = await showDoodleConfirm(
       context,
-      title: 'Out of chances!',
-      message:
-          'Watch a short ad to get ${AdRewards.reviveExtraChances} more '
-          'guesses and keep this level going?',
-      confirmLabel: 'Watch ad',
-      cancelLabel: 'No thanks',
+      title: t(StrKey.reviveTitle),
+      message: t(StrKey.reviveMessage, {'n': AdRewards.reviveExtraChances}),
+      confirmLabel: t(StrKey.watchAd),
+      cancelLabel: t(StrKey.noThanks),
     );
     if (!accepted || !mounted) return false;
 
@@ -159,12 +160,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       if (mounted) context.go(AppRoutes.levels);
       return;
     }
+    final t = ref.read(translateProvider);
     final leave = await showDoodleConfirm(
       context,
-      title: 'Leave this level?',
-      message: 'Your progress on this word will be lost.',
-      confirmLabel: 'Leave',
-      cancelLabel: 'Stay',
+      title: t(StrKey.leaveTitle),
+      message: t(StrKey.leaveMessage),
+      confirmLabel: t(StrKey.leave),
+      cancelLabel: t(StrKey.stay),
       destructive: true,
     );
     if (leave && mounted) context.go(AppRoutes.levels);
@@ -175,6 +177,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     if (_invalid) {
       return const InvalidLevelView();
     }
+    final t = ref.watch(translateProvider);
 
     // Route to the result screen once the session finishes.
     ref.listen<GameState?>(gameControllerProvider, (prev, next) {
@@ -191,7 +194,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       child: Scaffold(
         body: NotebookBackground(
           child: GamePlayView(
-            title: 'Level ${widget.levelId}',
+            title: t(StrKey.levelTitle, {'n': widget.levelId}),
             onBack: _confirmLeave,
           ),
         ),

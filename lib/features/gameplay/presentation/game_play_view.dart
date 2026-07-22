@@ -14,6 +14,8 @@ import '../../../core/widgets/level_badge.dart';
 import '../../../core/widgets/life_counter.dart';
 import '../../../core/widgets/speech_bubble.dart';
 import '../../ads/presentation/rewarded_reveal_button.dart';
+import '../../localization/application/locale_controller.dart';
+import '../../localization/domain/str_key.dart';
 import '../../progression/application/progress_controller.dart';
 import '../application/game_controller.dart';
 import '../domain/game_state.dart';
@@ -41,6 +43,7 @@ class GamePlayView extends ConsumerWidget {
         ? ref.watch(progressControllerProvider.select((p) => p.coins))
         : 0;
     final playing = state.phase == GamePhase.playing;
+    final t = ref.watch(translateProvider);
     // Reserve roughly the bottom 15% of the screen as empty breathing room
     // beneath the keyboard / hint row.
     final bottomSpace = MediaQuery.sizeOf(context).height * 0.15;
@@ -51,6 +54,7 @@ class GamePlayView extends ConsumerWidget {
           _TopBar(
             title: title,
             category: state.level.category,
+            backLabel: t(StrKey.back),
             coins: coins,
             showCoins: coinsEnabled,
             onBack: onBack,
@@ -80,7 +84,7 @@ class GamePlayView extends ConsumerWidget {
                             right: 0,
                             width: constraints.maxWidth * 0.58,
                             child: SpeechBubble(
-                              message: Encouragement.forState(state),
+                              message: t(Encouragement.forState(state)),
                             ),
                           ),
                         ],
@@ -137,6 +141,7 @@ class _TopBar extends StatelessWidget {
   const _TopBar({
     required this.title,
     required this.category,
+    required this.backLabel,
     required this.coins,
     required this.showCoins,
     required this.onBack,
@@ -144,6 +149,7 @@ class _TopBar extends StatelessWidget {
 
   final String title;
   final String category;
+  final String backLabel;
   final int coins;
   final bool showCoins;
   final VoidCallback onBack;
@@ -161,7 +167,7 @@ class _TopBar extends StatelessWidget {
         children: [
           DoodleIconButton(
             icon: DoodleIconType.back,
-            semanticLabel: 'Back',
+            semanticLabel: backLabel,
             size: 44,
             onPressed: onBack,
           ),
@@ -219,14 +225,21 @@ class _HintRow extends ConsumerWidget {
   final bool enabled;
   final int coins;
 
+  static StrKey _labelKey(HintType type) => switch (type) {
+    HintType.revealLetter => StrKey.hintReveal,
+    HintType.removeLetters => StrKey.hintClearThree,
+    HintType.extraChance => StrKey.hintPlusLife,
+  };
+
   Future<void> _use(BuildContext context, WidgetRef ref, HintType hint) async {
+    final t = ref.read(translateProvider);
     if (hint == HintType.extraChance) {
       final ok = await showDoodleConfirm(
         context,
-        title: 'Buy an extra chance?',
-        message:
-            'Spend ${hint.cost} coins to add one more allowed mistake for this level.',
-        confirmLabel: 'Buy',
+        title: t(StrKey.buyExtraTitle),
+        message: t(StrKey.buyExtraMessage, {'n': hint.cost}),
+        confirmLabel: t(StrKey.buy),
+        cancelLabel: t(StrKey.noThanks),
       );
       if (!ok || !context.mounted) return;
     }
@@ -237,9 +250,9 @@ class _HintRow extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     final text = switch (outcome) {
       HintOutcome.applied => null,
-      HintOutcome.notEnoughCoins => 'Not enough coins for that hint.',
-      HintOutcome.nothingToDo => 'No letters left for that hint.',
-      HintOutcome.alreadyUsedMax => 'You already used an extra chance here.',
+      HintOutcome.notEnoughCoins => t(StrKey.notEnoughCoins),
+      HintOutcome.nothingToDo => t(StrKey.noLettersHint),
+      HintOutcome.alreadyUsedMax => t(StrKey.alreadyExtra),
     };
     if (text != null) {
       messenger
@@ -250,6 +263,7 @@ class _HintRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(translateProvider);
     final canReveal = HangmanEngine.canReveal(state);
     final canRemove = HangmanEngine.canRemove(state);
     final canExtra = HangmanEngine.canExtraChance(state);
@@ -260,7 +274,7 @@ class _HintRow extends ConsumerWidget {
       return Expanded(
         child: HintButton(
           icon: icon,
-          label: type.shortLabel,
+          label: t(_labelKey(type)),
           cost: type.cost,
           affordable: affordable,
           onPressed: active ? () => _use(context, ref, type) : null,

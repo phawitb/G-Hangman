@@ -11,6 +11,7 @@ import '../../../core/widgets/coin_counter.dart';
 import '../../../core/widgets/doodle_button.dart';
 import '../../../core/widgets/doodle_card.dart';
 import '../../../core/widgets/doodle_icons.dart';
+import '../../../core/widgets/bottom_reserve.dart';
 import '../../../core/widgets/hint_button.dart';
 import '../../../core/widgets/letter_tile.dart';
 import '../../../core/widgets/notebook_background.dart';
@@ -18,6 +19,8 @@ import '../../../core/widgets/speech_bubble.dart';
 import '../../gameplay/domain/game_state.dart';
 import '../../gameplay/domain/hint_type.dart';
 import '../../gameplay/domain/scene_theme.dart';
+import '../../localization/application/locale_controller.dart';
+import '../../localization/domain/str_key.dart';
 import '../../settings/application/settings_controller.dart';
 
 class TutorialScreen extends ConsumerStatefulWidget {
@@ -31,40 +34,39 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
   final _controller = PageController();
   int _page = 0;
 
-  late final List<_Step> _steps = [
-    _Step(
-      title: 'Read the clue',
-      body:
-          'Each round shows a question or hint. It tells you what word to find.',
-      demo: const SpeechBubble(message: 'Which animal builds dams?'),
-    ),
-    _Step(
-      title: 'Pick letters',
-      body:
-          'Tap letters to guess. Correct letters turn green and fill the blanks.',
-      demo: _letterDemo(),
-    ),
-    _Step(
-      title: 'Mind your mistakes',
-      body:
-          'Wrong letters cost a chance and nudge our doodle friend into a silly spot. Run out and the round ends.',
-      demo: const SizedBox(
-        height: 150,
-        child: CharacterScene(
-          theme: SceneTheme.balloonDrift,
-          wrongCount: 3,
-          maxMistakes: 6,
-          phase: GamePhase.playing,
+  List<_Step> get _steps {
+    final t = ref.read(translateProvider);
+    return [
+      _Step(
+        title: t(StrKey.tut1Title),
+        body: t(StrKey.tut1Body),
+        demo: SpeechBubble(message: t(StrKey.tutDemoClue)),
+      ),
+      _Step(
+        title: t(StrKey.tut2Title),
+        body: t(StrKey.tut2Body),
+        demo: _letterDemo(),
+      ),
+      _Step(
+        title: t(StrKey.tut3Title),
+        body: t(StrKey.tut3Body),
+        demo: const SizedBox(
+          height: 150,
+          child: CharacterScene(
+            theme: SceneTheme.balloonDrift,
+            wrongCount: 3,
+            maxMistakes: 6,
+            phase: GamePhase.playing,
+          ),
         ),
       ),
-    ),
-    _Step(
-      title: 'Use hints & coins',
-      body:
-          'Stuck? Spend coins on hints to reveal a letter, clear wrong ones, or earn an extra chance.',
-      demo: _hintDemo(),
-    ),
-  ];
+      _Step(
+        title: t(StrKey.tut4Title),
+        body: t(StrKey.tut4Body),
+        demo: _hintDemo(),
+      ),
+    ];
+  }
 
   @override
   void dispose() {
@@ -90,48 +92,52 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLast = _page == _steps.length - 1;
+    final t = ref.watch(translateProvider);
+    final steps = _steps;
+    final isLast = _page == steps.length - 1;
     return Scaffold(
       body: NotebookBackground(
         child: SafeArea(
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(DoodleMetrics.md),
-                  child: TextButton(
-                    onPressed: _finish,
-                    child: Text(
-                      'Skip',
-                      style: DoodleTextStyles.body().copyWith(
-                        color: DoodleColors.inkSoft,
+          child: BottomReserve(
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(DoodleMetrics.md),
+                    child: TextButton(
+                      onPressed: _finish,
+                      child: Text(
+                        t(StrKey.skip),
+                        style: DoodleTextStyles.body().copyWith(
+                          color: DoodleColors.inkSoft,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: PageView.builder(
-                  controller: _controller,
-                  onPageChanged: (i) => setState(() => _page = i),
-                  itemCount: _steps.length,
-                  itemBuilder: (context, i) => _StepView(step: _steps[i]),
+                Expanded(
+                  child: PageView.builder(
+                    controller: _controller,
+                    onPageChanged: (i) => setState(() => _page = i),
+                    itemCount: steps.length,
+                    itemBuilder: (context, i) => _StepView(step: steps[i]),
+                  ),
                 ),
-              ),
-              _dots(),
-              Padding(
-                padding: const EdgeInsets.all(DoodleMetrics.lg),
-                child: DoodleButton(
-                  label: isLast ? 'Start Playing' : 'Next',
-                  expand: true,
-                  icon: isLast
-                      ? null
-                      : const DoodleIcon(DoodleIconType.arrowRight, size: 22),
-                  onPressed: _next,
+                _dots(),
+                Padding(
+                  padding: const EdgeInsets.all(DoodleMetrics.lg),
+                  child: DoodleButton(
+                    label: isLast ? t(StrKey.startPlaying) : t(StrKey.next),
+                    expand: true,
+                    icon: isLast
+                        ? null
+                        : const DoodleIcon(DoodleIconType.arrowRight, size: 22),
+                    onPressed: _next,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

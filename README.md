@@ -40,6 +40,10 @@ _Add screenshots here once you run the app (e.g. `docs/home.png`, `docs/game.png
   gameplay components.
 - **Accessibility** — semantic labels on icons/keys, 48px minimum tap targets,
   reduced-motion support, and scalable text without overflow.
+- **Localization** — English, German, Swedish and Finnish. A first-launch
+  language picker (changeable in Settings) localises **both** the UI and the
+  puzzles, keyboards adapt to each language's alphabet (Ä Ö Ü Å), and **progress
+  is remembered per language**.
 - **Responsive** — portrait-first, usable from ~320px wide up to tablets.
 - **Monetization** — AdMob rewarded, interstitial and banner ads with UMP
   consent, all optional and non-intrusive (see _AdMob monetization_ below).
@@ -204,6 +208,27 @@ package folder under `android/app/src/main/kotlin/…`) and in Xcode
 (_Runner → Signing & Capabilities → Bundle Identifier_). Display names are
 already set to **Doodle Word Quest** in `AndroidManifest.xml`
 (`android:label`) and `Info.plist` (`CFBundleDisplayName`).
+
+---
+
+## Localization
+
+Supported languages: **English (en), German (de), Swedish (sv), Finnish (fi)**.
+
+- On first launch the player picks a language (`/language`); it is changeable
+  anytime from **Settings → Language**. The choice persists.
+- Both the interface **and the level puzzles** are localized. UI strings live in
+  `lib/features/localization/domain/app_strings.dart` (keyed by `StrKey`, with
+  English fallback); translated levels live in `lib/data/localized_levels.dart`.
+- Each language carries its own **alphabet** (incl. Ä Ö Ü Å), and the gameplay
+  and in-app keyboards render exactly those letters.
+- **Progress is stored per language** (the level bank, unlock, coins, stars and
+  streak are keyed by language code), so switching back resumes where you left
+  off. English ships 100 levels; de/sv/fi ship 30 each — extend a language by
+  adding entries to its map in `localized_levels.dart` (no code changes needed).
+
+To add a language: add a value to `AppLanguage` (code + native name + alphabet),
+a string map in `app_strings.dart`, and a level map in `localized_levels.dart`.
 
 ---
 

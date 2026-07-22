@@ -6,7 +6,9 @@
 ///    always shown and never need to be guessed;
 ///  * only ASCII letters A–Z count as "guessable".
 abstract final class WordUtils {
-  static final RegExp _letter = RegExp(r'[A-Z]');
+  /// Guessable letters across all supported languages: A–Z plus the
+  /// Nordic/German extras (Å Ä Ö Ü). Compared after upper-casing.
+  static final RegExp _letter = RegExp(r'[A-ZÅÄÖÜ]');
 
   /// Upper-cases and trims a raw answer for storage/comparison.
   static String normalize(String raw) => raw.trim().toUpperCase();

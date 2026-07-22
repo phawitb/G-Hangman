@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/doodle_metrics.dart';
 import '../../../core/widgets/letter_tile.dart';
 import '../domain/game_state.dart';
-import '../domain/hangman_engine.dart';
 
 /// Responsive alphabet grid. Keys size themselves to the available width, so it
 /// works from ~320px up to tablets, and each key carries its own state.
@@ -40,7 +39,7 @@ class AlphabetKeyboard extends StatelessWidget {
           spacing: spacing,
           runSpacing: spacing,
           children: [
-            for (final letter in HangmanEngine.alphabet.split(''))
+            for (final letter in state.level.letters)
               SizedBox(
                 width: tileSize,
                 child: LetterTile(

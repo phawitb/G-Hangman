@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/widgets/doodle_button.dart';
 import '../../../core/widgets/doodle_icons.dart';
+import '../../localization/application/locale_controller.dart';
+import '../../localization/domain/str_key.dart';
 import '../../progression/application/progress_controller.dart';
 import '../application/ad_providers.dart';
 import '../domain/ad_reward.dart';
@@ -24,6 +26,7 @@ class _RewardedCoinsButtonState extends ConsumerState<RewardedCoinsButton> {
     if (_busy) return; // guard rapid repeated taps
     setState(() => _busy = true);
     final messenger = ScaffoldMessenger.of(context);
+    final t = ref.read(translateProvider);
     await ref
         .read(adServiceProvider)
         .showRewarded(
@@ -36,9 +39,7 @@ class _RewardedCoinsButtonState extends ConsumerState<RewardedCoinsButton> {
           onUnavailable: () {
             messenger
               ..hideCurrentSnackBar()
-              ..showSnackBar(
-                const SnackBar(content: Text('No ad available right now.')),
-              );
+              ..showSnackBar(SnackBar(content: Text(t(StrKey.noAdAvailable))));
           },
           onClosed: () {
             if (mounted) setState(() => _busy = false);
@@ -50,9 +51,12 @@ class _RewardedCoinsButtonState extends ConsumerState<RewardedCoinsButton> {
   @override
   Widget build(BuildContext context) {
     final canShow = ref.watch(adServiceProvider).canRequestAds;
+    final t = ref.watch(translateProvider);
     if (!canShow) return const SizedBox.shrink();
     return DoodleButton(
-      label: _busy ? 'Loading ad…' : 'Free ${AdRewards.coinAmount} coins',
+      label: _busy
+          ? t(StrKey.loadingAd)
+          : t(StrKey.freeCoins, {'n': AdRewards.coinAmount}),
       variant: DoodleButtonVariant.secondary,
       expand: true,
       icon: const DoodleIcon(DoodleIconType.coin, size: 22),

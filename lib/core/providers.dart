@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/localized_levels.dart';
 import '../features/gameplay/data/level_repository.dart';
+import '../features/localization/application/locale_controller.dart';
 import 'audio/audio_service.dart';
 import 'haptics/haptics_service.dart';
 import 'persistence/daily_repository.dart';
@@ -28,9 +30,11 @@ final dailyRepositoryProvider = Provider<DailyRepository>(
   (ref) => DailyRepository(ref.watch(keyValueStoreProvider)),
 );
 
-final levelRepositoryProvider = Provider<LevelRepository>(
-  (ref) => const LevelRepository(),
-);
+/// Language-aware: rebuilds with the current language's level bank.
+final levelRepositoryProvider = Provider<LevelRepository>((ref) {
+  final lang = ref.watch(localeControllerProvider).language;
+  return LevelRepository(LocalizedLevels.forLanguage(lang));
+});
 
 final audioServiceProvider = Provider<AudioService>(
   (ref) => SystemAudioService(),

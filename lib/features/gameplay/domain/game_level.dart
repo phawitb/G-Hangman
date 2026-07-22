@@ -3,6 +3,10 @@ import '../../../core/utilities/word_utils.dart';
 import 'difficulty.dart';
 import 'scene_theme.dart';
 
+/// Default guessable alphabet (English). Localized levels override this with
+/// their language's letters, including Nordic/German extras (Ä Ö Ü Å).
+const String kDefaultAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
 /// An immutable, typed level definition.
 class GameLevel {
   const GameLevel({
@@ -16,6 +20,7 @@ class GameLevel {
     this.coinReward = 20,
     this.explanation,
     this.explicitScene,
+    this.alphabet = kDefaultAlphabet,
   });
 
   final int id;
@@ -35,6 +40,12 @@ class GameLevel {
 
   /// Explicit scene override; when null the scene is derived from [id].
   final SceneTheme? explicitScene;
+
+  /// The language's guessable upper-case letters (keyboard + hint pool).
+  final String alphabet;
+
+  /// The alphabet as a list of single-character strings.
+  List<String> get letters => alphabet.split('');
 
   /// Scene is explicit when provided, else deterministically derived from id so
   /// the same level always looks the same.

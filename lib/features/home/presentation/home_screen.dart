@@ -14,8 +14,11 @@ import '../../../core/widgets/coin_counter.dart';
 import '../../../core/widgets/doodle_button.dart';
 import '../../../core/widgets/doodle_icon_button.dart';
 import '../../../core/widgets/doodle_icons.dart';
+import '../../../core/widgets/bottom_reserve.dart';
 import '../../../core/widgets/notebook_background.dart';
 import '../../ads/presentation/rewarded_coins_button.dart';
+import '../../localization/application/locale_controller.dart';
+import '../../localization/domain/str_key.dart';
 import '../../gameplay/domain/scene_theme.dart';
 import '../../gameplay/domain/game_state.dart';
 import '../../progression/application/progress_controller.dart';
@@ -27,6 +30,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(progressControllerProvider);
     final levelRepo = ref.watch(levelRepositoryProvider);
+    final t = ref.watch(translateProvider);
     final currentLevel = progress.unlockedLevelId.clamp(
       levelRepo.firstId,
       levelRepo.lastId,
@@ -35,37 +39,42 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       body: NotebookBackground(
         child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: DoodleMetrics.lg,
+          child: BottomReserve(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
-                    child: Column(
-                      children: [
-                        _topBar(context, progress.coins),
-                        const SizedBox(height: DoodleMetrics.sm),
-                        _titleBlock(),
-                        const _HomeHero(),
-                        _progressSummary(
-                          context,
-                          progress.completedCount,
-                          levelRepo.count,
-                          progress.totalStars,
-                        ),
-                        const SizedBox(height: DoodleMetrics.lg),
-                        _buttons(context, currentLevel),
-                        const RewardedCoinsButton(),
-                        const SizedBox(height: DoodleMetrics.lg),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: DoodleMetrics.lg,
+                      ),
+                      child: Column(
+                        children: [
+                          _topBar(context, progress.coins),
+                          const SizedBox(height: DoodleMetrics.sm),
+                          _titleBlock(),
+                          const _HomeHero(),
+                          _progressSummary(
+                            context,
+                            t,
+                            progress.completedCount,
+                            levelRepo.count,
+                            progress.totalStars,
+                          ),
+                          const SizedBox(height: DoodleMetrics.lg),
+                          _buttons(context, t, currentLevel),
+                          const RewardedCoinsButton(),
+                          const SizedBox(height: DoodleMetrics.lg),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -109,6 +118,7 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _progressSummary(
     BuildContext context,
+    Translate t,
     int completed,
     int total,
     int stars,
@@ -116,7 +126,10 @@ class HomeScreen extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text('$completed / $total levels', style: DoodleTextStyles.bodySoft()),
+        Text(
+          t(StrKey.levelsProgress, {'done': completed, 'total': total}),
+          style: DoodleTextStyles.bodySoft(),
+        ),
         const SizedBox(width: DoodleMetrics.md),
         const DoodleIcon(DoodleIconType.star, size: 18),
         const SizedBox(width: 4),
@@ -125,28 +138,28 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buttons(BuildContext context, int currentLevel) {
+  Widget _buttons(BuildContext context, Translate t, int currentLevel) {
     final buttons = <Widget>[
       DoodleButton(
-        label: 'Continue • Level $currentLevel',
+        label: t(StrKey.continueLevel, {'n': currentLevel}),
         expand: true,
         icon: const DoodleIcon(DoodleIconType.arrowRight, size: 22),
         onPressed: () => context.go(AppRoutes.game(currentLevel)),
       ),
       DoodleButton(
-        label: 'Level Select',
+        label: t(StrKey.levelSelect),
         variant: DoodleButtonVariant.secondary,
         expand: true,
         onPressed: () => context.go(AppRoutes.levels),
       ),
       DoodleButton(
-        label: 'Two Player',
+        label: t(StrKey.twoPlayer),
         variant: DoodleButtonVariant.secondary,
         expand: true,
         onPressed: () => context.go(AppRoutes.twoPlayerSetup),
       ),
       DoodleButton(
-        label: 'Daily Challenge',
+        label: t(StrKey.dailyChallenge),
         variant: DoodleButtonVariant.secondary,
         expand: true,
         onPressed: () => context.go(AppRoutes.daily),
