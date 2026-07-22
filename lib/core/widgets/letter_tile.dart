@@ -102,18 +102,21 @@ class _KeyPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromLTWH(2, 2, size.width - 4, size.height - 4);
-    final path = HandDrawn.roughRRect(rect, DoodleMetrics.radiusSm, seed: 42);
-    canvas.drawPath(path, HandDrawn.fill(fill));
-    canvas.drawPath(
-      path,
+    // A clean, even rounded square (no hand-drawn wobble) so the keyboard keys
+    // never look crooked.
+    final rrect = RRect.fromRectAndRadius(
+      rect,
+      const Radius.circular(DoodleMetrics.radiusSm),
+    );
+    canvas.drawRRect(rrect, HandDrawn.fill(fill));
+    canvas.drawRRect(
+      rrect,
       HandDrawn.inkStroke(width: DoodleMetrics.strokeMedium),
     );
     if (struck) {
-      canvas.drawPath(
-        HandDrawn.roughLine(
-          Offset(rect.left + 3, rect.top + 3),
-          Offset(rect.right - 3, rect.bottom - 3),
-        ),
+      canvas.drawLine(
+        Offset(rect.left + 3, rect.top + 3),
+        Offset(rect.right - 3, rect.bottom - 3),
         HandDrawn.inkStroke(width: DoodleMetrics.strokeMedium),
       );
     }
