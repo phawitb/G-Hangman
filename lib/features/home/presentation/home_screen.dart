@@ -192,7 +192,7 @@ class _HomeHero extends StatelessWidget {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: DoodleMetrics.sm),
       child: SizedBox(
-        height: 200,
+        height: 150,
         child: CharacterScene(
           theme: SceneTheme.balloonDrift,
           wrongCount: 0,

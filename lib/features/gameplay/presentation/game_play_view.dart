@@ -46,9 +46,9 @@ class GamePlayView extends ConsumerWidget {
         : 0;
     final playing = state.phase == GamePhase.playing;
     final t = ref.watch(translateProvider);
-    // A little breathing room beneath the keyboard / hint row. Kept small so the
-    // scene, clue and hearts above always have space to show in full.
-    final bottomSpace = MediaQuery.sizeOf(context).height * 0.06;
+    // No extra reserve: the shared banner footer is the bottom boundary, so the
+    // board sits directly above it.
+    const bottomSpace = 0.0;
 
     return SafeArea(
       child: Column(
@@ -68,34 +68,41 @@ class GamePlayView extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  // The scene flexes: it shrinks to give room so the clue and
-                  // hearts below are ALWAYS fully visible (never scrolled off).
+                  // The scene absorbs spare space but is capped so it stays a
+                  // modest size instead of ballooning; clue + hearts below stay
+                  // fully visible, and it still shrinks on short screens.
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        return Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            // Scene fills the flexible box (beside the bubble).
-                            Positioned.fill(
-                              child: CharacterScene(
-                                theme: state.level.scene,
-                                wrongCount: state.wrongCount,
-                                maxMistakes: state.maxMistakes,
-                                phase: state.phase,
-                                fill: true,
-                              ),
+                        final sceneH = constraints.maxHeight.clamp(0.0, 168.0);
+                        return Center(
+                          child: SizedBox(
+                            height: sceneH,
+                            width: constraints.maxWidth,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Positioned.fill(
+                                  child: CharacterScene(
+                                    theme: state.level.scene,
+                                    wrongCount: state.wrongCount,
+                                    maxMistakes: state.maxMistakes,
+                                    phase: state.phase,
+                                    fill: true,
+                                  ),
+                                ),
+                                // Encouragement bubble beside the mascot head.
+                                Positioned(
+                                  top: 0,
+                                  right: 0,
+                                  width: constraints.maxWidth * 0.58,
+                                  child: SpeechBubble(
+                                    message: t(Encouragement.forState(state)),
+                                  ),
+                                ),
+                              ],
                             ),
-                            // Encouragement bubble tucked beside the mascot head.
-                            Positioned(
-                              top: 0,
-                              right: 0,
-                              width: constraints.maxWidth * 0.58,
-                              child: SpeechBubble(
-                                message: t(Encouragement.forState(state)),
-                              ),
-                            ),
-                          ],
+                          ),
                         );
                       },
                     ),

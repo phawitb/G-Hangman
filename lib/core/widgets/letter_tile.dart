@@ -81,9 +81,22 @@ class _LetterTileState extends State<LetterTile> {
                 struck: widget.state == LetterState.wrong,
               ),
               child: Center(
-                child: Text(
-                  widget.letter,
-                  style: DoodleTextStyles.keycap().copyWith(color: _textColor),
+                // Scale to fit with a margin so accented caps (Ä Ö Å Ü) never
+                // clip the top border.
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 5,
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      widget.letter,
+                      style: DoodleTextStyles.keycap().copyWith(
+                        color: _textColor,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

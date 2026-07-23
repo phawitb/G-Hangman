@@ -1,25 +1,17 @@
 import 'package:flutter/material.dart';
 
-/// Reserves an empty band at the bottom of a screen equal to [fraction] of the
-/// screen height (default 15%), keeping content clear of the very bottom edge /
-/// gesture-navigation area. [child] fills the remaining space above the band.
-///
-/// Place it directly inside a screen's [SafeArea]. Screens that already pin
-/// their own bottom gap (e.g. the gameplay board) don't need this.
+/// Historically reserved an empty band at the bottom of a screen. The app now
+/// shows a shared banner footer at the very bottom of every screen, so content
+/// simply sits directly above that ad frame — this no longer adds any gap and
+/// is kept only so existing call sites don't need to change.
 class BottomReserve extends StatelessWidget {
   const BottomReserve({super.key, required this.child, this.fraction = 0.15});
 
   final Widget child;
+
+  /// Retained for API compatibility; no longer used.
   final double fraction;
 
   @override
-  Widget build(BuildContext context) {
-    final gap = MediaQuery.sizeOf(context).height * fraction;
-    return Column(
-      children: [
-        Expanded(child: child),
-        SizedBox(height: gap),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => child;
 }

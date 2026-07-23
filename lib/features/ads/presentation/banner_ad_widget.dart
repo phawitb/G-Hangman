@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../../../app/theme/doodle_metrics.dart';
+import '../../../core/widgets/doodle_box_painter.dart';
 import '../application/ad_providers.dart';
 import '../domain/ad_config.dart';
 
@@ -79,11 +81,49 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
   @override
   Widget build(BuildContext context) {
     final banner = _banner;
-    if (!_loaded || banner == null) return const SizedBox.shrink();
-    return SizedBox(
-      width: banner.size.width.toDouble(),
-      height: banner.size.height.toDouble(),
-      child: AdWidget(ad: banner),
+    if (!_loaded || banner == null) {
+      // Reserve the bottom safe area so screens (which no longer add their own
+      // bottom inset) still stay clear of the gesture bar.
+      return const SafeArea(top: false, child: SizedBox.shrink());
+    }
+    final w = banner.size.width.toDouble();
+    final h = banner.size.height.toDouble();
+    // Clip the ad to a rounded rect and draw the hand-drawn frame ON TOP, so the
+    // ad's own edge chrome (e.g. the dark "Test Ad" bars) is tucked behind the
+    // frame and only the clean ad shows inside a doodle border.
+    return SafeArea(
+      top: false,
+      child: Padding(
+        // A clear gap above the frame so screen content never crowds the ad.
+        padding: const EdgeInsets.fromLTRB(
+          DoodleMetrics.sm,
+          DoodleMetrics.md,
+          DoodleMetrics.sm,
+          DoodleMetrics.sm,
+        ),
+        child: Center(
+          child: SizedBox(
+            width: w,
+            height: h,
+            child: CustomPaint(
+              foregroundPainter: const DoodleBoxPainter(
+                fillColor: Color(0x00000000),
+                radius: DoodleMetrics.radiusMd,
+                strokeWidth: DoodleMetrics.strokeHeavy,
+                seed: 23,
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(DoodleMetrics.radiusMd),
+                child: SizedBox(
+                  width: w,
+                  height: h,
+                  child: AdWidget(ad: banner),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

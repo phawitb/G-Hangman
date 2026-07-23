@@ -21,7 +21,10 @@ abstract final class AppTheme {
         onSurface: DoodleColors.ink,
         error: DoodleColors.red,
       ),
-      scaffoldBackgroundColor: DoodleColors.paper,
+      // Transparent so the app-wide NotebookBackground (painted once behind the
+      // whole window) shows through every screen continuously — including the
+      // banner strip — with no opaque paper band breaking up the grid.
+      scaffoldBackgroundColor: Colors.transparent,
       splashFactory: InkRipple.splashFactory,
     );
 

@@ -96,7 +96,8 @@ class _TwoPlayerSetupScreenState extends ConsumerState<TwoPlayerSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomGap = MediaQuery.sizeOf(context).height * 0.15;
+    // Small fixed gap; the shared banner footer now sits below every screen.
+    const bottomGap = DoodleMetrics.md;
     final t = ref.watch(translateProvider);
     final alphabet = ref.watch(localeControllerProvider).language.alphabet;
     return Scaffold(

@@ -4,8 +4,10 @@ import '../../../app/theme/doodle_metrics.dart';
 import '../../../core/widgets/letter_tile.dart';
 import '../domain/game_state.dart';
 
-/// Responsive alphabet grid. Keys size themselves to the available width, so it
-/// works from ~320px up to tablets, and each key carries its own state.
+/// On-screen letter grid in plain A–Z (alphabetical) order, matching the
+/// two-player secret-word keyboard. Keys size themselves to the available width
+/// so it works from small phones up to tablets. Every letter keeps its slot so
+/// the grid never reflows; letters cleared by the bomb hint fade away in place.
 class AlphabetKeyboard extends StatelessWidget {
   const AlphabetKeyboard({
     super.key,
@@ -27,21 +29,18 @@ class AlphabetKeyboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const columns = 7;
+    const columns = 8;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final spacing = DoodleMetrics.sm;
-        final totalSpacing = spacing * (columns - 1);
-        final tileSize = ((constraints.maxWidth - totalSpacing) / columns)
-            .clamp(30.0, 60.0);
+        const spacing = DoodleMetrics.xs;
+        final tileSize =
+            ((constraints.maxWidth - spacing * (columns - 1)) / columns)
+                .clamp(24.0, 44.0);
         return Wrap(
           alignment: WrapAlignment.center,
           spacing: spacing,
           runSpacing: spacing,
           children: [
-            // Every letter keeps its slot so the grid never reflows. Letters
-            // cleared by the bomb hint simply fade away in place, leaving an
-            // empty gap where they were.
             for (final letter in state.level.letters)
               SizedBox(
                 width: tileSize,

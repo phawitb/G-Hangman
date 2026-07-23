@@ -13,7 +13,6 @@ import '../../../core/widgets/doodle_icon_button.dart';
 import '../../../core/widgets/doodle_icons.dart';
 import '../../../core/widgets/hand_drawn.dart';
 import '../../../core/widgets/notebook_background.dart';
-import '../../ads/presentation/banner_ad_widget.dart';
 import '../../gameplay/domain/game_level.dart';
 import '../../localization/application/locale_controller.dart';
 import '../../localization/domain/str_key.dart';
@@ -55,8 +54,6 @@ class LevelSelectScreen extends ConsumerWidget {
               Expanded(
                 child: _LevelMap(levels: levels, progress: progress),
               ),
-              // Banner footer pinned to the very bottom (zero-size until loaded).
-              const BannerAdWidget(),
             ],
           ),
         ),
