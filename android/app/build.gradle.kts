@@ -48,6 +48,14 @@ android {
 
     buildTypes {
         release {
+            // Disable R8 code shrinking/obfuscation. google_mobile_ads pulls in
+            // WorkManager + Room, whose generated WorkDatabase_Impl gets stripped
+            // by R8, crashing on launch ("Failed to create an instance of
+            // androidx.work.impl.WorkDatabase"). The size saving is tiny for a
+            // Flutter app (the engine dominates), so keeping it off is safest.
+            isMinifyEnabled = false
+            isShrinkResources = false
+
             // Use the real release keystore when key.properties is present;
             // otherwise fall back to debug keys so `flutter run --release` works.
             signingConfig = if (hasReleaseSigning) {

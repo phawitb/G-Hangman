@@ -25,13 +25,19 @@ class HiddenWordRow extends StatelessWidget {
     final revealed = characters.where((c) => c != null).map((c) => c!).join();
     return Semantics(
       label: 'Answer so far: ${revealed.isEmpty ? 'blank' : revealed}',
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: DoodleMetrics.sm,
-        runSpacing: DoodleMetrics.sm,
-        children: [
-          for (var i = 0; i < characters.length; i++) _slot(characters[i], i),
-        ],
+      // Always keep the answer slots on a single line: lay them out in one Row
+      // and scale the whole row down to fit the width when the word is long.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < characters.length; i++) ...[
+              if (i > 0) const SizedBox(width: DoodleMetrics.sm),
+              _slot(characters[i], i),
+            ],
+          ],
+        ),
       ),
     );
   }

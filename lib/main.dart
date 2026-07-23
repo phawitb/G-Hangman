@@ -22,6 +22,13 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  // Full-screen: hide the top status bar (time/battery/signal); keep the
+  // bottom system nav so gestures and the banner stay clear of it.
+  await SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.manual,
+    overlays: [SystemUiOverlay.bottom],
+  );
+
   // Initialise local storage. If it fails, fall back to an in-memory store so
   // the app still runs (progress just won't persist this session).
   KeyValueStore store;
