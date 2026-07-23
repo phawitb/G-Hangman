@@ -50,7 +50,7 @@ class _RewardedCoinsButtonState extends ConsumerState<RewardedCoinsButton> {
 
   @override
   Widget build(BuildContext context) {
-    final canShow = ref.watch(adServiceProvider).canRequestAds;
+    final canShow = ref.watch(adReadyProvider);
     final t = ref.watch(translateProvider);
     if (!canShow) return const SizedBox.shrink();
     return DoodleButton(

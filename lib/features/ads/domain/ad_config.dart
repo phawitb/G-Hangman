@@ -95,6 +95,7 @@ abstract final class AdConfig {
   static String get interstitialUnitId => _ids.interstitial;
   static String get rewardedUnitId => _ids.rewarded;
 
-  /// Show interstitial after every N completed levels.
+  /// Show an interstitial after every N completed levels, only at the natural
+  /// break between levels — never during play.
   static const int interstitialEveryNLevels = 4;
 }

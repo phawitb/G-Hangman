@@ -36,14 +36,25 @@ Future<void> main() async {
   // stays fully functional. Consent + SDK init happen in the background so
   // startup is never blocked by the network.
   final AdService adService = kIsWeb ? NoopAdService() : GoogleAdService();
-  unawaited(adService.initialize());
+
+  final container = ProviderContainer(
+    overrides: [
+      keyValueStoreProvider.overrideWithValue(store),
+      adServiceProvider.overrideWithValue(adService),
+    ],
+  );
+  // Reflect ad readiness reactively once consent + SDK init resolve, so ad-gated
+  // widgets (free-coins button, hint "watch ad") appear without needing an
+  // unrelated rebuild first.
+  unawaited(
+    adService.initialize().then((_) {
+      container.read(adReadyProvider.notifier).set(adService.canRequestAds);
+    }),
+  );
 
   runApp(
-    ProviderScope(
-      overrides: [
-        keyValueStoreProvider.overrideWithValue(store),
-        adServiceProvider.overrideWithValue(adService),
-      ],
+    UncontrolledProviderScope(
+      container: container,
       child: const DoodleWordQuestApp(),
     ),
   );

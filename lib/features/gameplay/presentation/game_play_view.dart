@@ -15,7 +15,7 @@ import '../../../core/widgets/hint_button.dart';
 import '../../../core/widgets/level_badge.dart';
 import '../../../core/widgets/life_counter.dart';
 import '../../../core/widgets/speech_bubble.dart';
-import '../../ads/presentation/rewarded_reveal_button.dart';
+import '../../ads/application/ad_providers.dart';
 import '../../localization/application/locale_controller.dart';
 import '../../localization/domain/str_key.dart';
 import '../../progression/application/progress_controller.dart';
@@ -46,9 +46,9 @@ class GamePlayView extends ConsumerWidget {
         : 0;
     final playing = state.phase == GamePhase.playing;
     final t = ref.watch(translateProvider);
-    // Reserve roughly the bottom 15% of the screen as empty breathing room
-    // beneath the keyboard / hint row.
-    final bottomSpace = MediaQuery.sizeOf(context).height * 0.15;
+    // A little breathing room beneath the keyboard / hint row. Kept small so the
+    // scene, clue and hearts above always have space to show in full.
+    final bottomSpace = MediaQuery.sizeOf(context).height * 0.06;
 
     return SafeArea(
       child: Column(
@@ -62,38 +62,46 @@ class GamePlayView extends ConsumerWidget {
             onBack: onBack,
           ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: DoodleMetrics.lg),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: DoodleMetrics.lg,
+              ),
               child: Column(
                 children: [
-                  // Scene with the encouragement bubble tucked into the empty
-                  // sky beside the mascot's head.
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          CharacterScene(
-                            theme: state.level.scene,
-                            wrongCount: state.wrongCount,
-                            maxMistakes: state.maxMistakes,
-                            phase: state.phase,
-                            // Shorter scene so the board stays compact.
-                            aspectRatio: 2.1,
-                          ),
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            width: constraints.maxWidth * 0.58,
-                            child: SpeechBubble(
-                              message: t(Encouragement.forState(state)),
+                  // The scene flexes: it shrinks to give room so the clue and
+                  // hearts below are ALWAYS fully visible (never scrolled off).
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            // Scene fills the flexible box (beside the bubble).
+                            Positioned.fill(
+                              child: CharacterScene(
+                                theme: state.level.scene,
+                                wrongCount: state.wrongCount,
+                                maxMistakes: state.maxMistakes,
+                                phase: state.phase,
+                                fill: true,
+                              ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
+                            // Encouragement bubble tucked beside the mascot head.
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              width: constraints.maxWidth * 0.58,
+                              child: SpeechBubble(
+                                message: t(Encouragement.forState(state)),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                  const SizedBox(height: DoodleMetrics.sm),
+                  const SizedBox(height: DoodleMetrics.xs),
+                  // Clue wraps to as many lines as it needs — never truncated.
                   _ClueCard(clue: state.level.clue),
                   // Hearts sit right under the question with a tight gap.
                   const SizedBox(height: DoodleMetrics.xs),
@@ -128,7 +136,6 @@ class GamePlayView extends ConsumerWidget {
                 if (coinsEnabled) ...[
                   const SizedBox(height: DoodleMetrics.md),
                   _HintRow(state: state, enabled: playing, coins: coins),
-                  const RewardedRevealButton(),
                 ],
               ],
             ),
@@ -206,7 +213,7 @@ class _ClueCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(DoodleMetrics.md),
+      padding: const EdgeInsets.symmetric(vertical: DoodleMetrics.xs),
       child: Text(
         clue,
         textAlign: TextAlign.center,
@@ -233,8 +240,41 @@ class _HintRow extends ConsumerWidget {
     HintType.extraChance => StrKey.hintPlusLife,
   };
 
+  void _toast(BuildContext context, String text) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(text)));
+  }
+
   Future<void> _use(BuildContext context, WidgetRef ref, HintType hint) async {
     final t = ref.read(translateProvider);
+
+    // Out of coins → the hint's "▶ Ad" button plays a rewarded ad straight
+    // away (no extra confirm step) and applies the hint for free.
+    if (coins < hint.cost) {
+      final adService = ref.read(adServiceProvider);
+      if (!adService.canRequestAds) {
+        _toast(context, t(StrKey.notEnoughCoins));
+        return;
+      }
+      var earned = false;
+      await adService.showRewarded(
+        onReward: () => earned = true,
+        onUnavailable: () {
+          if (context.mounted) _toast(context, t(StrKey.noAdAvailable));
+        },
+        // Apply after the ad closes so the bomb burst is actually visible
+        // (showing it under a full-screen ad would be wasted).
+        onClosed: () {
+          if (!earned || !context.mounted) return;
+          if (hint == HintType.removeLetters) BombBurst.show(context);
+          ref.read(gameControllerProvider.notifier).applyHintFromAd(hint);
+        },
+      );
+      return;
+    }
+
+    // Coins path.
     if (hint == HintType.extraChance) {
       final ok = await showDoodleConfirm(
         context,
@@ -255,18 +295,13 @@ class _HintRow extends ConsumerWidget {
         .read(gameControllerProvider.notifier)
         .useHint(hint);
     if (!context.mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
     final text = switch (outcome) {
       HintOutcome.applied => null,
       HintOutcome.notEnoughCoins => t(StrKey.notEnoughCoins),
       HintOutcome.nothingToDo => t(StrKey.noLettersHint),
       HintOutcome.alreadyUsedMax => t(StrKey.alreadyExtra),
     };
-    if (text != null) {
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(text)));
-    }
+    if (text != null) _toast(context, text);
   }
 
   @override
@@ -275,16 +310,19 @@ class _HintRow extends ConsumerWidget {
     final canReveal = HangmanEngine.canReveal(state);
     final canRemove = HangmanEngine.canRemove(state);
     final canExtra = HangmanEngine.canExtraChance(state);
+    final adReady = ref.watch(adReadyProvider);
 
     Widget hint(HintType type, DoodleIconType icon, bool available) {
       final affordable = coins >= type.cost;
-      final active = enabled && available && affordable;
+      // When out of coins the hint stays usable via a rewarded ad instead.
+      final active = enabled && available && (affordable || adReady);
       return Expanded(
         child: HintButton(
           icon: icon,
           label: t(_labelKey(type), {'n': Economy.removeLettersCount}),
           cost: type.cost,
           affordable: affordable,
+          watchAd: !affordable && adReady,
           onPressed: active ? () => _use(context, ref, type) : null,
         ),
       );

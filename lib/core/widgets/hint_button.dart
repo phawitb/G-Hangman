@@ -16,6 +16,7 @@ class HintButton extends StatefulWidget {
     required this.cost,
     required this.onPressed,
     this.affordable = true,
+    this.watchAd = false,
   });
 
   final DoodleIconType icon;
@@ -23,6 +24,10 @@ class HintButton extends StatefulWidget {
   final int cost;
   final VoidCallback? onPressed;
   final bool affordable;
+
+  /// When true the coin cost is replaced by a "watch a rewarded ad" affordance
+  /// (shown when the player is out of coins but an ad is available).
+  final bool watchAd;
 
   bool get enabled => onPressed != null;
 
@@ -83,19 +88,38 @@ class _HintButtonState extends State<HintButton> {
                           : DoodleColors.disabledInk,
                     ),
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      DoodleIcon(DoodleIconType.coin, size: 14),
-                      const SizedBox(width: 2),
-                      Text(
-                        '${widget.cost}',
-                        style: DoodleTextStyles.label().copyWith(
-                          color: costColor,
+                  if (widget.watchAd)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.play_circle_fill,
+                          size: 16,
+                          color: DoodleColors.blueDeep,
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Ad',
+                          style: DoodleTextStyles.label().copyWith(
+                            color: DoodleColors.blueDeep,
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        DoodleIcon(DoodleIconType.coin, size: 14),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${widget.cost}',
+                          style: DoodleTextStyles.label().copyWith(
+                            color: costColor,
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),

@@ -13,3 +13,21 @@ final adServiceProvider = Provider<AdService>((ref) {
   ref.onDispose(service.dispose);
   return service;
 });
+
+/// Reactive mirror of `AdService.canRequestAds`.
+///
+/// `canRequestAds` is a plain getter that flips to `true` asynchronously once
+/// the SDK + consent finish initialising — watching the service instance alone
+/// never rebuilds. `main()` (and the privacy-options flow) push the resolved
+/// value here so ad-gated widgets (free-coins button, hint "watch ad") appear
+/// as soon as ads are actually available.
+final adReadyProvider = NotifierProvider<AdReadyNotifier, bool>(
+  AdReadyNotifier.new,
+);
+
+class AdReadyNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void set(bool value) => state = value;
+}

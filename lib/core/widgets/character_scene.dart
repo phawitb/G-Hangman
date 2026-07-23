@@ -21,6 +21,7 @@ class CharacterScene extends StatefulWidget {
     required this.maxMistakes,
     required this.phase,
     this.aspectRatio = 1.7,
+    this.fill = false,
   });
 
   final SceneTheme theme;
@@ -29,7 +30,12 @@ class CharacterScene extends StatefulWidget {
   final GamePhase phase;
 
   /// Width / height of the scene box. Larger = shorter scene.
+  /// Ignored when [fill] is true.
   final double aspectRatio;
+
+  /// When true the scene expands to fill whatever box it's given (so a parent
+  /// can shrink it), instead of locking itself to [aspectRatio].
+  final bool fill;
 
   @override
   State<CharacterScene> createState() => _CharacterSceneState();
@@ -70,27 +76,27 @@ class _CharacterSceneState extends State<CharacterScene>
     final ratio = widget.maxMistakes == 0
         ? 0.0
         : (widget.wrongCount / widget.maxMistakes).clamp(0.0, 1.0);
+    final painter = AnimatedBuilder(
+      animation: _bob,
+      builder: (context, _) {
+        final bob = sin(_bob.value * 2 * pi) * 4;
+        return CustomPaint(
+          painter: _ScenePainter(
+            theme: widget.theme,
+            ratio: ratio,
+            wrongCount: widget.wrongCount,
+            phase: widget.phase,
+            bob: bob,
+          ),
+        );
+      },
+    );
     return Semantics(
       label: _describe(ratio),
       excludeSemantics: true,
-      child: AspectRatio(
-        aspectRatio: widget.aspectRatio,
-        child: AnimatedBuilder(
-          animation: _bob,
-          builder: (context, _) {
-            final bob = sin(_bob.value * 2 * pi) * 4;
-            return CustomPaint(
-              painter: _ScenePainter(
-                theme: widget.theme,
-                ratio: ratio,
-                wrongCount: widget.wrongCount,
-                phase: widget.phase,
-                bob: bob,
-              ),
-            );
-          },
-        ),
-      ),
+      child: widget.fill
+          ? SizedBox.expand(child: painter)
+          : AspectRatio(aspectRatio: widget.aspectRatio, child: painter),
     );
   }
 

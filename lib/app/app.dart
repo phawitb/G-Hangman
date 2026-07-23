@@ -16,7 +16,26 @@ class DoodleWordQuestApp extends ConsumerWidget {
       title: AppInfo.name,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
+      scrollBehavior: const _NoStretchScrollBehavior(),
       routerConfig: router,
     );
   }
+}
+
+/// Removes the Android "stretch" overscroll glow (which looked distorted over
+/// the hand-drawn art) in favour of a clean, clamped scroll that simply stops
+/// at the edges.
+class _NoStretchScrollBehavior extends MaterialScrollBehavior {
+  const _NoStretchScrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => child;
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) =>
+      const ClampingScrollPhysics();
 }

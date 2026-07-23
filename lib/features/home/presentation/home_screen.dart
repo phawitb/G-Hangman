@@ -14,7 +14,6 @@ import '../../../core/widgets/coin_counter.dart';
 import '../../../core/widgets/doodle_button.dart';
 import '../../../core/widgets/doodle_icon_button.dart';
 import '../../../core/widgets/doodle_icons.dart';
-import '../../../core/widgets/bottom_reserve.dart';
 import '../../../core/widgets/notebook_background.dart';
 import '../../ads/presentation/rewarded_coins_button.dart';
 import '../../localization/application/locale_controller.dart';
@@ -39,42 +38,46 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       body: NotebookBackground(
         child: SafeArea(
-          child: BottomReserve(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: DoodleMetrics.lg,
-                      ),
-                      child: Column(
-                        children: [
-                          _topBar(context, progress.coins),
-                          const SizedBox(height: DoodleMetrics.sm),
-                          _titleBlock(),
-                          const _HomeHero(),
-                          _progressSummary(
-                            context,
-                            t,
-                            progress.completedCount,
-                            levelRepo.count,
-                            progress.totalStars,
-                          ),
-                          const SizedBox(height: DoodleMetrics.lg),
-                          _buttons(context, t, currentLevel),
-                          const RewardedCoinsButton(),
-                          const SizedBox(height: DoodleMetrics.lg),
-                        ],
-                      ),
-                    ),
+          child: Column(
+            children: [
+              // Top bar stays pinned; everything else scrolls so the menu and
+              // the "free coins" button below it are always fully reachable.
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  DoodleMetrics.lg,
+                  DoodleMetrics.sm,
+                  DoodleMetrics.lg,
+                  0,
+                ),
+                child: _topBar(context, progress.coins),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    DoodleMetrics.lg,
+                    DoodleMetrics.sm,
+                    DoodleMetrics.lg,
+                    DoodleMetrics.xl,
                   ),
-                );
-              },
-            ),
+                  child: Column(
+                    children: [
+                      _titleBlock(),
+                      const _HomeHero(),
+                      _progressSummary(
+                        context,
+                        t,
+                        progress.completedCount,
+                        levelRepo.count,
+                        progress.totalStars,
+                      ),
+                      const SizedBox(height: DoodleMetrics.lg),
+                      _buttons(context, t, currentLevel),
+                      const RewardedCoinsButton(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

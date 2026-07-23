@@ -136,8 +136,14 @@ class SettingsScreen extends ConsumerWidget {
                       label: t(StrKey.privacyChoices),
                       variant: DoodleButtonVariant.secondary,
                       expand: true,
-                      onPressed: () =>
-                          ref.read(adServiceProvider).showPrivacyOptions(),
+                      onPressed: () async {
+                        final ad = ref.read(adServiceProvider);
+                        await ad.showPrivacyOptions();
+                        // Consent may have changed whether ads can be requested.
+                        ref.read(adReadyProvider.notifier).set(
+                          ad.canRequestAds,
+                        );
+                      },
                     ),
                   ],
                   const SizedBox(height: DoodleMetrics.md),

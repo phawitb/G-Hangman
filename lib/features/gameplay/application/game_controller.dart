@@ -92,6 +92,19 @@ class GameController extends Notifier<GameState?> {
     return HintOutcome.applied;
   }
 
+  /// Applies any hint for free after a rewarded ad — used when the player has
+  /// run out of coins and chooses to watch an ad instead. Returns true when the
+  /// hint was applied. Does not touch coins.
+  Future<bool> applyHintFromAd(HintType hint) async {
+    final current = state;
+    if (current == null || current.isFinished) return false;
+    if (!HangmanEngine.canApply(current, hint)) return false;
+    state = HangmanEngine.apply(current, hint);
+    await _audio.play(SoundEvent.hint);
+    await _haptics.trigger(HapticEvent.light);
+    return true;
+  }
+
   /// Reveals one correct letter for free (granted by a rewarded ad). Returns
   /// true when a letter was revealed. Does not touch coins.
   Future<bool> revealLetterFromAd() async {
